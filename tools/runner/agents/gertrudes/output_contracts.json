@@ -1,0 +1,79 @@
+{
+  "files": {
+    "domain_summary.md": {
+      "required_sections": [
+        "Objetivo do produto",
+        "Atores",
+        "Entidades principais",
+        "Integrações externas",
+        "Eventos externos",
+        "Fluxos principais",
+        "Restrições",
+        "Dúvidas abertas"
+      ],
+      "minimum_chars": 400
+    },
+
+    "requirements.md": {
+      "required_sections": [
+        "Requisitos Funcionais"
+      ],
+      "minimum_requirements": 4,
+      "requirement_prefix": "RF-"
+    },
+
+    "non_functional.md": {
+      "required_sections": [
+        "Segurança",
+        "Performance",
+        "Confiabilidade",
+        "Observabilidade"
+      ],
+      "minimum_chars": 300
+    },
+
+    "glossary.md": {
+      "must_be_table": true,
+      "minimum_rows": 3
+    },
+
+    "assumptions.md": {
+      "assumption_prefix": "AS-",
+      "minimum_assumptions": 2
+    },
+
+    "handoff_to_corrinha.md": {
+      "required_sections": [
+        "Entradas",
+        "Próximo passo",
+        "Pontos críticos"
+      ],
+      "minimum_chars": 200
+    }
+  },
+
+  "domain_rules": {
+    "must_mention_terms": [
+      "turma",
+      "matrícula",
+      "pagamento",
+      "certificare"
+    ],
+
+    "minimum_terms_found": 3,
+
+    "forbidden_terms": [
+      "gestão de projetos",
+      "crm",
+      "rh",
+      "professor",
+      "professores"
+    ]
+  },
+
+  "quality_rules": {
+    "reject_if_empty_files": true,
+    "reject_if_generic_language": true,
+    "reject_if_missing_sections": true
+  }
+}

@@ -1,5 +1,5 @@
 # Intenção do produto: Schola
-Atualizado em 2026-03-05 as 16:57
+Atualizado em 2026-03-06 as 10:52
 
 Schola é um produto para gerenciar novas turmas do curso de ProdOps.
 

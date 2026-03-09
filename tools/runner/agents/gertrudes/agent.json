@@ -1,29 +1,124 @@
 {
   "name": "gertrudes",
-  "version": "1.0.0",
-  "role": "bench + requirements",
-  "description": "Compila conhecimento de indústria e transforma intenção do produto em requisitos verificáveis e não funcionais.",
+  "version": "2.0.0",
+  "role": "domain-analysis-and-requirements",
+  "description": "Analisa intenção de produto, interpreta domínio, usa RAG para apoiar a análise e produz requisitos funcionais, requisitos não funcionais, glossário, suposições e handoff para a próxima agente.",
+  "responsibilities": [
+    "analisar o domínio do produto",
+    "identificar atores, entidades, fluxos e restrições",
+    "transformar intenção em requisitos verificáveis",
+    "gerar requisitos não funcionais aderentes ao contexto",
+    "registrar suposições explicitamente",
+    "preparar handoff para Corrinha"
+  ],
+  "forbidden_behaviors": [
+    "inventar domínio não descrito",
+    "inventar integrações não informadas",
+    "inventar métricas numéricas sem contexto",
+    "produzir user stories",
+    "produzir event storming",
+    "produzir código"
+  ],
   "inputs": {
     "intent_markdown": "0-intent/intention.md",
     "context_json": "0-intent/context.json"
   },
   "outputs": {
-    "requirements_md": "1-requirements/requirements.md",
-    "assumptions_md": "1-requirements/assumptions.md",
-    "glossary_md": "1-requirements/glossary.md",
-    "non_functional_md": "1-requirements/non_functional.md",
-    "handoff_md": "1-requirements/handoff_to_corrinha.md"
+    "output_dir": "1-requirements",
+    "requirements_md": "requirements.md",
+    "non_functional_md": "non_functional.md",
+    "glossary_md": "glossary.md",
+    "assumptions_md": "assumptions.md",
+    "handoff_md": "handoff_to_corrinha.md",
+    "domain_summary_md": "domain_summary.md"
   },
   "knowledge": {
-    "qdrant_collections": {
-      "coarse": ["odd__product__coarse", "odd__requirements__coarse"],
-      "fine": ["odd__product__fine", "odd__requirements__fine"]
+    "collections": {
+      "primary_coarse": [
+        "odd__requirements__coarse",
+        "odd__product__coarse"
+      ],
+      "primary_fine": [
+        "odd__requirements__fine",
+        "odd__product__fine"
+      ],
+      "secondary_coarse": [
+        "odd__architecture__coarse"
+      ],
+      "secondary_fine": [
+        "odd__architecture__fine"
+      ]
     },
-    "topk_coarse": 8,
-    "topk_fine": 18
+    "retrieval_strategy": {
+      "mode": "two_stage",
+      "first_stage": "coarse",
+      "second_stage": "fine",
+      "merge_results": true,
+      "deduplicate_by_doc_and_chunk": true
+    },
+    "limits": {
+      "topk_primary_coarse": 3,
+      "topk_primary_fine": 5,
+      "topk_secondary_coarse": 1,
+      "topk_secondary_fine": 2,
+      "max_evidence_chars": 3500
+    },
+    "query_profiles": [
+      {
+        "name": "domain_understanding",
+        "purpose": "entender domínio, atores, entidades e fluxos",
+        "query_template": "domain analysis for {{product}} {{intent}} {{context}} actors entities flows constraints"
+      },
+      {
+        "name": "requirements_engineering",
+        "purpose": "obter apoio para requisitos funcionais e critérios verificáveis",
+        "query_template": "requirements engineering for {{product}} {{intent}} {{context}} functional requirements acceptance criteria business rules"
+      },
+      {
+        "name": "non_functional_analysis",
+        "purpose": "obter apoio para requisitos não funcionais e restrições de qualidade",
+        "query_template": "non functional requirements for {{product}} {{intent}} {{context}} security privacy reliability auditability observability idempotency"
+      }
+    ]
+  },
+  "generation": {
+    "strategy": "single_pass_with_strict_output_contract",
+    "fallbacks": {
+      "allow_markdown_bundle_split": true,
+      "allow_handoff_tail_extraction": true,
+      "allow_raw_requirements_fallback": false
+    },
+    "quality_gates": {
+      "require_domain_terms": true,
+      "required_domain_terms": [
+        "schola",
+        "prodops",
+        "turma",
+        "turmas",
+        "matrícula",
+        "matricula",
+        "pagamento",
+        "certificare"
+      ],
+      "minimum_required_terms_found": 3,
+      "forbidden_terms": [
+        "professor",
+        "professores",
+        "gestão de projetos",
+        "rh",
+        "crm",
+        "curso anterior",
+        "portal genérico"
+      ]
+    }
   },
   "models": {
     "embed_model": "nomic-embed-text",
     "generate_model": "llama3.1:8b"
+  },
+  "runner": {
+    "allow_force": true,
+    "write_debug_artifacts": true,
+    "write_state": true
   }
 }

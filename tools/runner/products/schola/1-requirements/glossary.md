@@ -1,5 +1,5 @@
 | Termo | Definição | Exemplo |
 |------|-----------|--------|
-| Turma | Grupo de alunos que estudam juntos. | Turma de ProdOps |
-| Matrícula | Processo de inscrição de um aluno em uma turma. | Matrícula na turma de ProdOps |
-| Confirmação de Pagamento | Verificação de que o pagamento foi realizado com sucesso. | Confirmação de pagamento da matrícula |
+| Turma | Uma turma é um grupo de alunos que estudam juntos. | Ex: Matemática
+| Matrícula | A matrícula é o processo de inscrição de um aluno em uma turma. | Ex: João se matriculou na turma de Matemática.
+| Pagamento | O pagamento é a confirmação de que o aluno pagou a taxa de matrícula. | Ex: O pagamento foi confirmado.

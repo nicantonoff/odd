@@ -1,110 +1,352 @@
-## Evidências: odd__product__coarse
-- score=0.6003 doc=inspired-marty-cagan.pdf specialty=product level=coarse
-  
-- score=0.5981 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
-- score=0.5979 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
-- score=0.5958 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
-- score=0.5926 doc=inspired-marty-cagan.pdf specialty=product level=coarse
-  
-- score=0.5917 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
-- score=0.5916 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
-- score=0.5915 doc=user-story-mapping-jeff-patton.pdf specialty=product level=coarse
-  
+- (0.721) [requirements]  :: 5783c453a4dbfa16ddf56f405e6f9225e31598e08125065ae38381f429d67376
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
 
-## Evidências: odd__requirements__coarse
-- score=0.6233 doc=mastering-the-requirements-process.pdf specialty=requirements level=coarse
-  
-- score=0.6083 doc=software-requirements-wiegers.epub specialty=requirements level=coarse
-  
-- score=0.6060 doc=mastering-the-requirements-process.pdf specialty=requirements level=coarse
-  
-- score=0.6058 doc=software-requirements-wiegers.epub specialty=requirements level=coarse
-  
-- score=0.6055 doc=software-requirements-wiegers.epub specialty=requirements level=coarse
-  
-- score=0.6047 doc=mastering-the-requirements-process.pdf specialty=requirements level=coarse
-  
-- score=0.6046 doc=mastering-the-requirements-process.pdf specialty=requirements level=coarse
-  
-- score=0.6037 doc=software-requirements-wiegers.epub specialty=requirements level=coarse
-  
+rate financial scandals involving WorldCom, Enron, Arthur FOOTNOTE 1
+We are grateful for 
+the help provided by 
+Dr. Charles Pfleeger 
+on the subject of U.S
 
-## Evidências: odd__product__fine
-- score=0.6168 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5970 doc=user-story-mapping-jeff-patton.pdf specialty=product level=fine
-  
-- score=0.5969 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5967 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5948 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5944 doc=user-story-mapping-jeff-patton.pdf specialty=product level=fine
-  
-- score=0.5939 doc=user-story-mapping-jeff-patton.pdf specialty=product level=fine
-  
-- score=0.5932 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5912 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5896 doc=user-story-mapping-jeff-patton.pdf specialty=product level=fine
-  
-- score=0.5893 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5889 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5889 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5885 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5883 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5880 doc=user-story-mapping-jeff-patton.pdf specialty=product level=fine
-  
-- score=0.5879 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
-- score=0.5868 doc=inspired-marty-cagan.pdf specialty=product level=fine
-  
+270 ● Chapter
 
-## Evidências: odd__requirements__fine
-- score=0.6138 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6125 doc=mastering-the-requirements-process.pdf specialty=requirements level=fine
-  
-- score=0.6107 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6099 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6099 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6086 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6084 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6062 doc=mastering-the-requirements-process.pdf specialty=requirements level=fine
-  
-- score=0.6056 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6051 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6050 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6042 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6039 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6033 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6030 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6029 doc=software-requirements-wiegers.epub specialty=requirements level=fine
-  
-- score=0.6017 doc=mastering-the-requirements-process.pdf specialty=requirements level=fine
-  
-- score=0.6014 doc=software-requirements-wiegers.epub specialty=requirements level=fine
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ommunica-
+tions (EC Directive) Regulations 2003 applies to your product. This directive,
+
+Finding the Non-functional Requirements ● 271
+which may shortly be updated, appl
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+secti
+
+- (0.713) [requirements]  :: e7078bced35e9765418098e231596e10fbb3c2ed5a1126657eb3865091e98f73
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+horities must be able to prove 
+they treated the roads correctly: 
+The product shall retain all ice predictions for all occasions on which 
+the schedule is run.
+Cultural requirements for this product use case are concerned with fitting 
+into the way that the engineers work:
+The product shall use terminology acceptable to the engineering 
+community.
+
+274 ● Chapter 11 Non-functional Requirements
+Finally, we reach the legal requirements. Many road authorities have a 
+statutory obligation to prove that they h
+
+- (0.713) [requirements]  :: 79fec41e704c8f5c139ba82ad871efb16ae4d816098c2734abf5bf7b3d0099f4
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+e every five 
+years.
+
+294 ● Chapter 12 Fit Criteria and Rationale 
+Fit Criterion: The interfaces to the Rosa Weather Station shall be 
+certified as complying with the National Transportation Communica-
+tion ITS Protocol (NTC/IP).
+This criterion is testable—by engineers from NTC—and points the product’s 
+builders toward a known and accepted standard
+
+Additionally, most things in your operating infrastructure have standards:
+Fit Criterion: The product must comply with HTML5 standard as pub-
+lished April 201
+
+- (0.709) [requirements]  :: 07d9042c9f375ef7ed39d8e4b18ee6cad91ba279be92df159cd6d98454e436c3
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+o new engineers
+
+Rationale: We frequently have new junior engineers and want the 
+product to have an appearance that is acceptable to them.
+This requirement is slightly m
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+horities must be able to prove 
+they treated the roads correctly: 
+The product shall retain all ice predictions for all occasions on which 
+the schedule is run.
+Cultural 
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+secti
+
+- (0.709) [requirements]  :: 0d67e4229e2aa67502135837ad7761b88eb5661f3fa63955a1d43d8bbdfe008a
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ts language to be the most important one. It is considered inap-
+propriate to offer French before Flemish if the user is logged in from Flanders
+
+The more we build products for use in different walks of life, by different 
+professions, and for different socioeconomic groups in different countries, 
+the more we need to consider cultural requirements
+
+Legal Requirements: Type 17
+The cost of litigation is one of the major risks for software-for-sale, and it 
+can be expensive for other kinds of software as we
+
+- (0.708) [requirements]  :: 029af744d6bfca249943990bd2ad606f0f762a2111b7589779d2a38a15d37fbd
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ommunica-
+tions (EC Directive) Regulations 2003 applies to your product. This directive,
+
+Finding the Non-functional Requirements ● 271
+which may shortly be updated, applies to non-European Union (EU) coun-
+tries that are operating within the EU, as it does to EU companies that wish 
+to export data to other countries, particularly the United States
+
+In the United Kingdom, the Data Protection Act of 1998 prohibits using 
+data—and this includes disclosing it—in any manner that does not comply 
+with your org
+
+- (0.707) [requirements]  :: 564fc506033502df11df2ffac7e7f9c732c81174aa1f7034689106812360c828
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ductive, efficient, quicker, 
+or whatever other quality it is seeking? 
+Even if you are developing open-source software, you still have a cus-
+tomer; the difference is simply that no money changes hands
+
+What will they find useful? What will they pay for? Understanding your cus-
+tomer correctly makes a huge difference to the success of your product
+
+For the IceBreaker product, the Northumberland County Highways 
+Department has agreed to be the first customer.1
+The customer for the product is the Northumbe
+
+- (0.707) [requirements]  :: d9f2d85d8841e360ab03a07a0c792ec142044e07dcdceb8fdfcf50723eb114b7
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ajor roads—
+the secondary ones don’t matter so much. Our current system can’t 
+distinguish between major and secondary roads.”
+How long would it take you to add that requirement to your sketch? About 
+10 seconds. How long would it have taken to modify the installed product 
+if the engineers had asked for this requirement after delivery? Enough said
+
+By working with the engineers, you may generate a prototype that is 
+quite different from the product they have at the moment. But that’s the 
+point—to change
+
+- (0.706) [requirements]  :: c7c51acfd080792857541289baa778ee6b298f8144ede2e0e506b6d776b21b44
+source: software-requirements-wiegers.epub
+specialty: requirements
+section: untitled
+
+uthor. This is courteous and
+ considerate, but it does not contribute to a shared goal of
+ discovering requirements defects as early as possible to make
+ development cheaper and faster. Discover whether this cultural
+ characteristic applies to your outsource partners so you can determine
+ realistic expectations and strategies for your peer reviews.
+
+The project schedule for one failed offshore project included a
+ one-week task named “Hold requirements workshops,” followed
+ immediately by tasks to implement se
+
+- (0.706) [requirements]  :: a82bbab02cd38fdea6841ee330d6f02712b146b8f79dd61dc7b97df8d77cc485
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+o new engineers
+
+Rationale: We frequently have new junior engineers and want the 
+product to have an appearance that is acceptable to them.
+This requirement is slightly more difficult to quantify, but you will be able 
+to write a suitable fit criterion for it after you have read Chapter 12. For the 
+moment, the stakeholders’ intention is sufficient
+
+The usability and humanity requirements for the product use case are 
+next. The stakeholders want the schedule to allow an engineer to easily 
+direct the truc
+
+- (0.703) [requirements]  :: 6c8e700fbc12fde3cf399604367531de57b0ef20b4d5e18f049b4f251fa6778e
+source: software-requirements-wiegers.epub
+specialty: requirements
+section: untitled
+
+stem will have transition requirements
+ that don’t affect the ultimate product software but that certainly
+ influence solution success. You might have stakeholders who don’t
+ even know the project exists, such as government agencies that
+ mandate standards that affect your system, yet you need to know
+ about them and their influence on the project.
+
+Some people mistakenly believe that time spent discussing
+ requirements simply delays delivery by the same duration. This assumes
+ that there’s no return on inves
+
+- (0.703) [requirements]  :: 7af1641816ac37d17adf8e1b4eec344b1e83bd26d6433386bca7f5a528210895
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+st of construction 
+and operation, can be 
+assessed using function 
+points or some other 
+size measurement. The 
+Benefit axis measures 
+the value to the 
+business and reflects the 
+customer ratings placed 
+by the stakeholders 
+on the product. The 
+Risk axis measures 
+the severity of risks 
+determined by the risk 
+analysis activity.Benefit
+Risk Cost
+
+393A
+/orn7a guide for writing a rigorous and complete 
+requirements speciﬁ cation Volere Requirements 
+Speciﬁ cation 
+Template
+Contents
+Project Drivers
+1. The
+
+- (0.703) [requirements]  :: 0ed0a80f608e049a99b9eb02fea8647bb234d65e22ca3ee21c29538067d83dc6
+source: software-requirements-wiegers.epub
+specialty: requirements
+section: untitled
+
+to which you want to apply each new practice, the
+ benefits that you hope it will provide, and any help or
+ additional information you might need. Think about whose
+ cooperation you’ll need to use the new techniques. Identify any
+ barriers that might impede your ability to use the practice and
+ consider who could help you break down those barriers.
+
+Select one new requirements engineering practice from this
+ book to learn more about and try to apply it starting next
+ week—literally! Select two or three additi
+
+- (0.702) [requirements]  :: ca5434bd0b133e475735e2625a106f76cf2279503a4ddecddb35c810f63df990
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ose, it is 
+rejected.
+Section 3, Mandated 
+Constraints, of the 
+Volere Requirements 
+Specification Template 
+provides a description 
+of how you record 
+constraints. You can 
+find the template in 
+Appendix A.
+
+60 ● Chapter 3 Scoping the Business Problem 
+Project Constraints 
+Project constraints describe the time and financial budgets for the project
+
+These parameters should be known at scoping time, because they affect the 
+requirements you gather later. If you have a $500,000 budget, there is no 
+point in
+
+- (0.696) [requirements]  :: 0e7fd27d69ee44a97c3719b2ef95715d831dcf144bd249a73a131987786ecab2
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+is not used as intended, then it may fail to provide the advan-
+tages for which it was built. Thus the statement of project purpose must 
+assume that the resulting produc
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+ose, it is 
+rejected.
+Section 3, Mandated 
+Constraints, of the 
+Volere Requirements 
+Specification Template 
+provides a description 
+of how you record 
+constraints. You c
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+secti
+
+- (0.695) [requirements]  :: ec8fc93c95624e5581fd32e328d41fd5ea1b808d58a074a8e2c47a5d88afebb9
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+st of construction 
+and operation, can be 
+assessed using function 
+points or some other 
+size measurement. The 
+Benefit axis measures 
+the value to the 
+business and ref
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+mplate as the basis for discovering, organizing, 
+and communicating their requirements
+
+The Volere website (www.volere.co.uk) contains articles about the Volere 
+techniqu
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+secti
+
+- (0.693) [requirements]  :: 377a45e8d41af686b565b20c035e24caeed90cf3a38636fde258532dc5867ba4
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+hatnez rules.2
+Fit Criterion: The communications department shall give the opinion 
+that the product displays no words or symbols that could be con-
+strued as religious o
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+section: untitled
+
+on: It initiated the action, and 
+it is the source of the data. You can say the requirement is for the product to 
+faithfully store the data (allow for the product to mak
+
+source: mastering-the-requirements-process.pdf
+specialty: requirements
+secti

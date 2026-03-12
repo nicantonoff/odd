@@ -11,14 +11,14 @@ async function main(): Promise<void> {
   const dryRun = args['dry-run'] === true;
   const outputDir = typeof args.output === 'string' ? args.output : './generated';
 
-  const terraformCommands = await runTerraform(terraformDir, dryRun);
+  // const terraformCommands = await runTerraform(terraformDir, dryRun);
   const ingestedEvents = await ingestEvents(eventsFile, dryRun);
 
   const report = {
     dryRun,
     terraformDir,
     eventsFile,
-    terraformCommands,
+    // terraformCommands,
     ingestedEvents
   };
 

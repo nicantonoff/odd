@@ -18,6 +18,8 @@ async function main(): Promise<void> {
   const dashboardTitle = requireStringArg(args, 'dashboard-title');
   const baseOutput = typeof args.output === 'string' ? args.output : './generated';
 
+  const terraformDir = path.join('./terraform');
+
   const inputName = path.basename(input, path.extname(input));
   const runId = buildRunId();
   const outputDir = path.join(baseOutput, `${inputName}_${runId}`);
@@ -28,13 +30,14 @@ async function main(): Promise<void> {
 
   await writeJsonFile(path.join(outputDir, 'plan.json'), plan);
   await writeJsonFile(path.join(outputDir, 'custom-events.json'), plan.customEvents);
-  await writeJsonFile(path.join(outputDir, 'terraform', 'dashboard.auto.tf.json'), terraformJson);
 
-  const commonTfDir = path.resolve('terraform', 'common');
-  const tfOutputDir = path.join(outputDir, 'terraform');
-  await ensureDir(tfOutputDir);
-  const commonFiles = await readdir(commonTfDir);
-  await Promise.all(commonFiles.map(f => copyFile(path.join(commonTfDir, f), path.join(tfOutputDir, f))));
+  await writeJsonFile(path.join(terraformDir, 'generated', runId+'-dashboard.auto.tf.json'), terraformJson);
+
+  // const commonTfDir = path.resolve('terraform', 'common');
+  // const tfOutputDir = path.join(outputDir, 'terraform');
+  // await ensureDir(tfOutputDir);
+  // const commonFiles = await readdir(commonTfDir);
+  // await Promise.all(commonFiles.map(f => copyFile(path.join(commonTfDir, f), path.join(tfOutputDir, f))));
 
   console.log(`Planner finalizado. Eventos: ${rows.length}`);
   console.log(`Output: ${outputDir}`);

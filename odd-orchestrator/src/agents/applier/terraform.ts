@@ -1,10 +1,22 @@
 import { spawn } from 'node:child_process';
 
 export async function runTerraform(dir: string, dryRun: boolean): Promise<string[]> {
+
+  const apiKey = process.env.DD_API_KEY;
+  const appKey = process.env.DD_APP_KEY;
+
   const commands = [
-    ['terraform', ['init']],
-    ['terraform', ['apply', '-auto-approve']]
+    // ['terraform', ['init']],x`
+    ['terraform', 
+      ['apply', 
+        '-auto-approve', 
+        `-var="datadog_api_key=${apiKey}"`, 
+        `-var="datadog_app_key=${appKey}"`
+      ]
+    ]
   ] as const;
+
+// terraform apply -auto-approve -var="datadog_api_key=$DD_API_KEY" -var="datadog_app_key=$DD_APP_KEY"
 
   const executed: string[] = [];
   for (const [cmd, args] of commands) {

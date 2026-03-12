@@ -6,6 +6,8 @@ terraform/.terraform.lock.hcl
 generated/*.json
 terraform/generated/*.json
 
+generated/
+
 
 terraform.tfstate
 terraform.tfstate.backup

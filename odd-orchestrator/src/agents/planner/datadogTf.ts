@@ -1,31 +1,37 @@
 import { DashboardPlan } from '../../shared/types.js';
 import { callOllama } from './ollama.js';
 
-const responseFormat = {
-  type: 'object',
-  properties: {
-    resource: {
-      type: 'object',
-      properties: {
-        datadog_dashboard_json: {
-          type: 'object',
-          properties: {
-            event_storming_dashboard: {
-              type: 'object',
-              properties: {
-                dashboard: { type: 'string' }
-              },
-              required: ['dashboard']
-            }
-          },
-          required: ['event_storming_dashboard']
-        }
-      },
-      required: ['datadog_dashboard_json']
-    }
-  },
-  required: ['resource']
-};
+function produceResponseFormat() {
+
+  const dashboardName = 'event_storming_dashboard-2';
+
+  return {
+    type: 'object',
+    properties: {
+      resource: {
+        type: 'object',
+        properties: {
+          datadog_dashboard_json: {
+            type: 'object',
+            properties: {
+              [dashboardName]: {
+                type: 'object',
+                properties: {
+                  dashboard: { type: 'string' }
+                },
+                required: ['dashboard']
+              }
+            },
+            required: [dashboardName]
+          }
+        },
+        required: ['datadog_dashboard_json']
+      }
+    },
+    required: ['resource']
+  };
+
+}
 
 function buildPrompt(plan: DashboardPlan): string {
   return [
@@ -80,6 +86,9 @@ function validate(obj: unknown): asserts obj is Record<string, unknown> {
 }
 
 export async function buildDatadogDashboardTerraform(plan: DashboardPlan): Promise<Record<string, unknown>> {
+
+  const responseFormat = produceResponseFormat();
+
   const result = await callOllama(buildPrompt(plan), responseFormat);
   validate(result);
   return result;

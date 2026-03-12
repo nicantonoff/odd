@@ -1,50 +1,17 @@
-export async function suggestStageTitle(stage: string): Promise<string> {
-  const enabled = process.env.OLLAMA_ENABLED === 'true';
-  if (!enabled) {
-    return toDisplayTitle(stage);
-  }
-
+export async function callOllama(prompt: string, format: Record<string, unknown>): Promise<unknown> {
   const baseUrl = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
   const model = process.env.OLLAMA_MODEL ?? 'qwen2.5-coder';
 
-  const payload = {
-    model,
-    prompt: [
-      'Você é especialista em DataDog Dashboard.',
-      'Receba um stage de Event Storming e responda apenas com um título curto em português.',
-      `stage: ${stage}`
-    ].join('\n'),
-    stream: false,
-    format: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' }
-      },
-      required: ['title']
-    }
-  };
+  const response = await fetch(`${baseUrl}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, prompt, stream: false, format })
+  });
 
-  try {
-    const response = await fetch(`${baseUrl}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      return toDisplayTitle(stage);
-    }
-
-    const data = (await response.json()) as { response?: string };
-    const parsed = JSON.parse(data.response ?? '{}') as { title?: string };
-    return parsed.title?.trim() || toDisplayTitle(stage);
-  } catch {
-    return toDisplayTitle(stage);
+  if (!response.ok) {
+    throw new Error(`Ollama returned ${response.status}: ${response.statusText}`);
   }
-}
 
-function toDisplayTitle(stage: string): string {
-  return stage
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  const data = (await response.json()) as { response?: string };
+  return JSON.parse(data.response ?? '{}');
 }

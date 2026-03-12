@@ -2,24 +2,24 @@
 
 ## Objetivo do produto
 
-O objetivo principal do Schola é permitir que uma pessoa veja turmas abertas, faça matrícula e tenha a matrícula confirmada após confirmação de pagamento.
+O objetivo do Schola é gerenciar novas turmas do curso de ProdOps, permitindo que uma pessoa veja turmas abertas, faça matrícula e tenha a matrícula confirmada após confirmação de pagamento.
 
 ## Atores
 
 * Aluno
-* Admin ProdOps
-* Sistema Pagamento
+* Administração de ProdOps (Admin_ProdOps)
+* Sistema de Pagamento
 
 ## Entidades principais
 
-* Turmas
-* Matrículas
-* Pagamentos
+* Turma
+* Matrícula
+* Pagamento
 
 ## Integrações externas
 
 * Autenticação e cadastro delegados para Certificare
-* Recebimento de confirmação de pagamento via webhook
+* Recepção de confirmação de pagamento via webhook
 
 ## Eventos externos
 
@@ -27,10 +27,11 @@ O objetivo principal do Schola é permitir que uma pessoa veja turmas abertas, f
 
 ## Fluxos principais
 
-1. O aluno se autenticar com o Certificare.
-2. O Schola lista turmas abertas do curso de ProdOps.
-3. O aluno solicita matrícula em uma turma.
-4. O sistema verifica a disponibilidade da turma e confirma a matrícula após recebimento de confirmação de pagamento.
+1. O aluno se autentica no Schola através da integração com o Certificare.
+2. O aluno lista as turmas abertas para matrícula e solicita a matrícula em uma turma específica.
+3. A Administração de ProdOps é notificada sobre a solicitação de matrícula.
+4. O sistema de pagamento é notificado sobre a confirmação de pagamento.
+5. A matrícula é confirmada após a confirmação de pagamento.
 
 ## Restrições
 
@@ -40,9 +41,9 @@ O objetivo principal do Schola é permitir que uma pessoa veja turmas abertas, f
 
 ## Dúvidas abertas
 
-* Como o Schola irá lidar com a integridade dos dados em caso de falha do sistema?
-* Quais são as implicações da delegação de autenticação e cadastro para Certificare?
+* Como o Schola lidará com matrículas canceladas ou expiradas?
+* Quais são as implicações da integração com o Certificare?
 
 ## Regras de qualidade
 
-O resumo deve refletir o domínio correto, capturar o fluxo principal do produto, destacar restrições reais e deixar explícitas as ambiguidades.
+O resumo reflete corretamente o domínio do produto, capturando os fluxos principais e restrições reais. As ambiguidades foram deixadas explícitas para a próxima etapa de requisitos.

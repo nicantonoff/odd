@@ -4,6 +4,12 @@ A saída anterior violou contratos obrigatórios.
 
 Sua tarefa é corrigir apenas a estrutura necessária.
 
+IMPORTANTE:
+- preserve o domínio do produto
+- preserve o máximo possível do conteúdo existente
+- responda SOMENTE em JSON válido
+- não escreva texto fora do JSON
+
 ---
 
 # Contexto
@@ -33,7 +39,6 @@ Corrija apenas o necessário.
 Não invente novo domínio.
 
 Mantenha aderência a:
-
 - Schola
 - ProdOps
 - turmas
@@ -43,74 +48,116 @@ Mantenha aderência a:
 
 ---
 
-# Regras estruturais
+# Regras estruturais dos artefatos
 
 ## requirements_md
 
-Deve conter **no mínimo 10 requisitos**.
+requirements_md deve começar exatamente com:
 
-Cada requisito deve começar com:
+# Requisitos Funcionais
 
-## RF-001
-## RF-002
-...
-## RF-010
+Depois disso devem existir no mínimo 10 requisitos funcionais.
 
-Cada requisito deve conter pelo menos:
+Cada requisito deve começar na primeira coluna da linha com o identificador RF.
 
-- Objetivo
-- Descrição
-- Regras de negócio
-- Critérios de aceitação
-- Rastreabilidade
+Formato obrigatório:
+
+RF-001 Nome curto do requisito
+
+### Objetivo
+texto curto
+
+### Descrição
+texto curto
+
+### Regras de negócio
+texto curto
+
+### Critérios de aceitação
+texto curto
+
+### Rastreabilidade
+texto curto
+
+Repita o padrão até RF-010.
+
+Regras obrigatórias:
+
+- a linha do requisito deve começar exatamente com RF-001, RF-002, etc
+- NÃO use ## RF-001
+- NÃO use listas numeradas
+- NÃO use bullets antes de RF
+- se existirem menos de 10 requisitos, gere os faltantes
 
 ---
 
 ## non_functional_md
 
-Deve conter:
+Deve conter exatamente estas seções:
 
-- Segurança
-- Performance
-- Confiabilidade
-- Observabilidade
+## Segurança
+texto curto
+
+## Performance
+texto curto
+
+## Confiabilidade
+texto curto
+
+## Observabilidade
+texto curto
 
 ---
 
 ## glossary_md
 
-Deve conter tabela markdown válida com **pelo menos 5 termos**.
+glossary_md deve conter uma tabela markdown válida com pelo menos 5 termos.
+
+Formato esperado:
+
+| Termo | Definição | Exemplo |
+|------|-----------|--------|
+| ... | ... | ... |
+| ... | ... | ... |
+| ... | ... | ... |
+| ... | ... | ... |
+| ... | ... | ... |
 
 ---
 
 ## assumptions_md
 
-Deve conter **pelo menos 3 suposições**:
+assumptions_md deve conter pelo menos 3 suposições neste formato:
 
-AS-001 ...
-Justificativa: ...
+AS-001 texto curto
+Justificativa: texto curto
 
-AS-002 ...
-Justificativa: ...
+AS-002 texto curto
+Justificativa: texto curto
 
-AS-003 ...
-Justificativa: ...
+AS-003 texto curto
+Justificativa: texto curto
 
 ---
 
 ## handoff_md
 
-Deve conter:
+handoff_md deve conter exatamente estas seções:
 
-- Entradas
-- Próximo passo
-- Pontos críticos
+## Entradas
+texto curto
+
+## Próximo passo
+texto curto
+
+## Pontos críticos
+texto curto
 
 ---
 
 # Regra crítica de saída
 
-Responda **SOMENTE em JSON válido**.
+Responda SOMENTE em JSON válido.
 
 Não escreva texto fora do JSON.
 

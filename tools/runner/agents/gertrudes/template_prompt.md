@@ -69,15 +69,17 @@ Você deve gerar exatamente estes 5 campos:
 
 # Regras para requirements_md
 
-requirements_md deve começar com:
+requirements_md deve começar exatamente com:
 
 # Requisitos Funcionais
 
 Depois disso, gere exatamente 10 requisitos funcionais, de RF-001 até RF-010.
 
-Cada requisito deve usar exatamente este formato reduzido:
+Cada requisito deve começar na primeira coluna da linha com o identificador RF.
 
-## RF-001 Nome curto do requisito
+Formato obrigatório:
+
+RF-001 Nome curto do requisito
 
 ### Objetivo
 texto curto
@@ -94,14 +96,17 @@ texto curto
 ### Rastreabilidade
 texto curto
 
-Repita o mesmo padrão até RF-010.
+Repita exatamente o mesmo padrão até RF-010.
 
-Regras adicionais:
-- não use lista numerada simples no lugar de RF
-- não use bullets no lugar de RF
-- não escreva menos de 10 requisitos
-- não escreva seções extras além das pedidas em cada RF
-- não escreva textos longos
+Regras adicionais obrigatórias:
+
+- a linha do requisito deve começar exatamente com RF-001, RF-002, etc.
+- NÃO use ## RF-001
+- NÃO use listas numeradas
+- NÃO use bullets antes de RF
+- NÃO escreva menos de 10 requisitos
+- NÃO escreva seções extras além das pedidas
+- mantenha textos curtos nesta primeira passada
 
 ---
 
@@ -191,7 +196,7 @@ Se estiver em dúvida, devolva JSON válido mais simples, mas ainda obedecendo t
 # Estrutura exata da resposta
 
 {
-  "requirements_md": "# Requisitos Funcionais\n\n## RF-001 ...\n\n### Objetivo\n...\n\n### Descrição\n...\n\n### Regras de negócio\n...\n\n### Critérios de aceitação\n...\n\n### Rastreabilidade\n...\n\n## RF-002 ...",
+  "requirements_md": "# Requisitos Funcionais\n\nRF-001 Nome curto\n\n### Objetivo\n...\n\n### Descrição\n...\n\n### Regras de negócio\n...\n\n### Critérios de aceitação\n...\n\n### Rastreabilidade\n...\n\nRF-002 Nome curto\n\n### Objetivo\n...\n\n### Descrição\n...\n\n### Regras de negócio\n...\n\n### Critérios de aceitação\n...\n\n### Rastreabilidade\n...",
   "non_functional_md": "## Segurança\n...\n\n## Performance\n...\n\n## Confiabilidade\n...\n\n## Observabilidade\n...",
   "glossary_md": "| Termo | Definição | Exemplo |\n|------|-----------|--------|\n| ... | ... | ... |\n| ... | ... | ... |\n| ... | ... | ... |\n| ... | ... | ... |\n| ... | ... | ... |",
   "assumptions_md": "AS-001 ...\nJustificativa: ...\n\nAS-002 ...\nJustificativa: ...\n\nAS-003 ...\nJustificativa: ...",

@@ -35,7 +35,7 @@ IMPORTANTE:
 
 Melhorar clareza, precisão e utilidade dos artefatos.
 
-Nesta revisão, expanda os requisitos, mas sem exagerar no tamanho.
+Nesta revisão, melhore o conteúdo sem expandir demais a estrutura.
 
 ---
 
@@ -61,7 +61,7 @@ Mantenha exatamente RF-001 até RF-010.
 
 Cada requisito deve continuar com este formato:
 
-## RF-001 Nome curto do requisito
+RF-001 Nome curto do requisito
 
 E deve conter exatamente estas subseções:
 
@@ -69,21 +69,6 @@ E deve conter exatamente estas subseções:
 texto curto
 
 ### Descrição
-texto curto
-
-### Atores envolvidos
-texto curto
-
-### Pré condições
-texto curto
-
-### Gatilho
-texto curto
-
-### Fluxo principal
-texto curto
-
-### Exceções e erros
 texto curto
 
 ### Regras de negócio
@@ -99,6 +84,7 @@ IMPORTANTE:
 - não adicione subseções além dessas
 - não escreva textos longos
 - mantenha exatamente 10 requisitos
+- preserve o identificador RF na primeira coluna da linha
 
 ---
 

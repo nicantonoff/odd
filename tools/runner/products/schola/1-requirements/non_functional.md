@@ -1,11 +1,17 @@
+# Requisitos Não Funcionais
+
 ## Segurança
-O Schola deve garantir a segurança dos dados dos usuários, incluindo autenticação e autorização.
+* A autenticação é feita exclusivamente por meio do Certificare.
+* A confirmação de pagamento é idempotente.
 
 ## Performance
-O Schola deve ser capaz de lidar com um grande número de requisições simultâneas sem comprometer a performance.
+* O sistema deve ser capaz de lidar com um grande número de solicitações simultâneas.
+* As atualizações devem ser feitas em tempo real.
 
 ## Confiabilidade
-O Schola deve ser confiável em termos de armazenamento e recuperação de dados.
+* O sistema deve ter uma taxa de erro baixa.
+* As confirmações devem ser auditáveis.
 
 ## Observabilidade
-O Schola deve fornecer logs e métricas para monitorar e diagnosticar problemas.
+* O sistema deve ter logs detalhados para auditoria.
+* As atualizações devem ser notificadas ao aluno por meio do sistema de comunicação interno.

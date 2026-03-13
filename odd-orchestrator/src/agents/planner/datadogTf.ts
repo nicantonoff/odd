@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { DashboardPlan } from '../../shared/types.js';
-import { callOllama } from './ollama.js';
+import { LlmExecutor } from '../../shared/llm/index.js';
 
 function produceResponseFormat(dashboardTitle: string) {
 
@@ -81,12 +81,12 @@ function validate(obj: unknown, dashboardName: string): asserts obj is Record<st
   }
 }
 
-export async function buildDatadogDashboardTerraform(plan: DashboardPlan): Promise<Record<string, unknown>> {
+export async function buildDatadogDashboardTerraform(llm: LlmExecutor, plan: DashboardPlan): Promise<Record<string, unknown>> {
 
   const responseFormat = produceResponseFormat(plan.dashboardTitle);
 
   const prompt = await buildPrompt(plan);
-  const result = await callOllama(prompt, responseFormat);
+  const result = await llm.call(prompt, responseFormat);
   validate(result, plan.dashboardTitle);
   return result;
 }

@@ -1,6 +1,6 @@
 export enum Model {
   // Ollama models
-  Qwen25Coder = 'qwen2.5-coder',
+  Qwen25Coder = 'qwen2.5-coder:14b',
   Llama31_8b  = 'llama3.1:8b',
 
   // OpenAI models

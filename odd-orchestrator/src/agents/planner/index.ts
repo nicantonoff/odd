@@ -3,6 +3,7 @@ import { parseArgs, requireStringArg } from '../../shared/cli.js';
 import { writeJsonFile } from '../../shared/fs.js';
 import { readEventStormingFile } from '../../shared/spreadsheet.js';
 import { Ollama, Model } from '../../shared/llm/index.js';
+import { categorizeEvents } from './categorizeEvents.js';
 import { buildDashboardPlan } from './buildPlan.js';
 import { buildDatadogDashboardTerraform } from './datadogTf.js';
 
@@ -28,7 +29,8 @@ async function main(): Promise<void> {
   const terraformLlm = new Ollama(Model.Qwen25Coder);
 
   const rows = await readEventStormingFile(input);
-  const plan = await buildDashboardPlan(plannerLlm, rows, dashboardTitle);
+  const categorized = await categorizeEvents(plannerLlm, rows);
+  const plan = await buildDashboardPlan(plannerLlm, categorized, dashboardTitle);
   const terraformJson = await buildDatadogDashboardTerraform(terraformLlm, plan);
 
   await writeJsonFile(path.join(outputDir, 'plan.json'), plan);

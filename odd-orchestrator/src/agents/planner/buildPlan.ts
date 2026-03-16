@@ -1,35 +1,46 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { DashboardPlan, EventStormingRow } from '../../shared/types.js';
+import { DashboardPlan, EventStormingRow, CategorizedEvents } from '../../shared/types.js';
 import { LlmExecutor } from '../../shared/llm/index.js';
 
 const responseFormat = {
   type: 'object',
   properties: {
     dashboardTitle: { type: 'string' },
-    groups: {
+    sections: {
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          stage: { type: 'string' },
-          title: { type: 'string' },
-          widgets: {
+          sectionType: { type: 'string', enum: ['problems', 'normal'] },
+          sectionTitle: { type: 'string' },
+          groups: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
-                id: { type: 'string' },
+                stage: { type: 'string' },
                 title: { type: 'string' },
-                widgetType: { type: 'string', enum: ['event_stream', 'note'] },
-                query: { type: 'string' },
-                stage: { type: 'string' }
+                widgets: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      title: { type: 'string' },
+                      widgetType: { type: 'string', enum: ['event_stream', 'note'] },
+                      query: { type: 'string' },
+                      stage: { type: 'string' }
+                    },
+                    required: ['id', 'title', 'widgetType', 'query', 'stage']
+                  }
+                }
               },
-              required: ['id', 'title', 'widgetType', 'query', 'stage']
+              required: ['stage', 'title', 'widgets']
             }
           }
         },
-        required: ['stage', 'title', 'widgets']
+        required: ['sectionType', 'sectionTitle', 'groups']
       }
     },
     customEvents: {
@@ -45,7 +56,7 @@ const responseFormat = {
       }
     }
   },
-  required: ['dashboardTitle', 'groups', 'customEvents']
+  required: ['dashboardTitle', 'sections', 'customEvents']
 };
 
 const promptTemplatePath = path.join(__dirname, 'buildPlan.prompt.md');
@@ -58,11 +69,12 @@ async function loadPromptTemplate(): Promise<string> {
   return promptTemplatePromise;
 }
 
-async function buildPrompt(rows: EventStormingRow[], dashboardTitle: string): Promise<string> {
+async function buildPrompt(categorized: CategorizedEvents, dashboardTitle: string): Promise<string> {
   const template = await loadPromptTemplate();
   return template
     .replaceAll('{{DASHBOARD_TITLE_JSON}}', JSON.stringify(dashboardTitle))
-    .replaceAll('{{EVENT_STORMING_ROWS_JSON}}', JSON.stringify(rows, null, 2));
+    .replaceAll('{{PROBLEMS_JSON}}', JSON.stringify(categorized.problems, null, 2))
+    .replaceAll('{{NORMAL_JSON}}', JSON.stringify(categorized.normal, null, 2));
 }
 
 function validate(obj: unknown, inputRows: EventStormingRow[]): asserts obj is DashboardPlan {
@@ -70,23 +82,30 @@ function validate(obj: unknown, inputRows: EventStormingRow[]): asserts obj is D
   const plan = obj as Record<string, unknown>;
 
   if (typeof plan.dashboardTitle !== 'string') throw new Error('Missing dashboardTitle');
-  if (!Array.isArray(plan.groups)) throw new Error('Missing groups array');
+  if (!Array.isArray(plan.sections)) throw new Error('Missing sections array');
   if (!Array.isArray(plan.customEvents)) throw new Error('Missing customEvents array');
 
   const inputKeys = new Set(inputRows.map(r => r.eventKey));
   const seenWidgetKeys = new Set<string>();
   const seenEventKeys = new Set<string>();
 
-  for (const group of plan.groups) {
-    const g = group as Record<string, unknown>;
-    if (typeof g.stage !== 'string' || typeof g.title !== 'string') throw new Error('Invalid group structure');
-    if (!Array.isArray(g.widgets)) throw new Error('Missing widgets array in group');
-    for (const w of g.widgets as Record<string, unknown>[]) {
-      if (typeof w.id !== 'string' || !inputKeys.has(w.id)) throw new Error(`Unknown widget id: ${w.id}`);
-      if (w.widgetType !== 'event_stream' && w.widgetType !== 'note') throw new Error(`Invalid widgetType: ${w.widgetType}`);
-      if (typeof w.title !== 'string' || typeof w.query !== 'string') throw new Error('Invalid widget fields');
-      if (typeof w.stage !== 'string') throw new Error('Missing widget stage');
-      seenWidgetKeys.add(w.id);
+  for (const section of plan.sections) {
+    const s = section as Record<string, unknown>;
+    if (s.sectionType !== 'problems' && s.sectionType !== 'normal') throw new Error('Invalid sectionType');
+    if (typeof s.sectionTitle !== 'string') throw new Error('Missing sectionTitle');
+    if (!Array.isArray(s.groups)) throw new Error('Missing groups array in section');
+
+    for (const group of s.groups) {
+      const g = group as Record<string, unknown>;
+      if (typeof g.stage !== 'string' || typeof g.title !== 'string') throw new Error('Invalid group structure');
+      if (!Array.isArray(g.widgets)) throw new Error('Missing widgets array in group');
+      for (const w of g.widgets as Record<string, unknown>[]) {
+        if (typeof w.id !== 'string' || !inputKeys.has(w.id)) throw new Error(`Unknown widget id: ${w.id}`);
+        if (w.widgetType !== 'event_stream' && w.widgetType !== 'note') throw new Error(`Invalid widgetType: ${w.widgetType}`);
+        if (typeof w.title !== 'string' || typeof w.query !== 'string') throw new Error('Invalid widget fields');
+        if (typeof w.stage !== 'string') throw new Error('Missing widget stage');
+        seenWidgetKeys.add(w.id);
+      }
     }
   }
 
@@ -104,9 +123,10 @@ function validate(obj: unknown, inputRows: EventStormingRow[]): asserts obj is D
   }
 }
 
-export async function buildDashboardPlan(llm: LlmExecutor, rows: EventStormingRow[], dashboardTitle: string): Promise<DashboardPlan> {
-  const prompt = await buildPrompt(rows, dashboardTitle);
+export async function buildDashboardPlan(llm: LlmExecutor, categorized: CategorizedEvents, dashboardTitle: string): Promise<DashboardPlan> {
+  const allRows = [...categorized.problems, ...categorized.normal];
+  const prompt = await buildPrompt(categorized, dashboardTitle);
   const result = await llm.call(prompt, responseFormat);
-  validate(result, rows);
+  validate(result, allRows);
   return result;
 }

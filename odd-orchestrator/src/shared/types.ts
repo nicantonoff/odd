@@ -12,6 +12,11 @@ export type EventStormingRow = {
   queryHint: string;
 };
 
+export type CategorizedEvents = {
+  problems: EventStormingRow[];
+  normal: EventStormingRow[];
+};
+
 export type DashboardWidgetPlan = {
   id: string;
   title: string;
@@ -26,6 +31,12 @@ export type DashboardGroupPlan = {
   widgets: DashboardWidgetPlan[];
 };
 
+export type DashboardSectionPlan = {
+  sectionType: 'problems' | 'normal';
+  sectionTitle: string;
+  groups: DashboardGroupPlan[];
+};
+
 export type CustomEventPayload = {
   title: string;
   text: string;
@@ -34,6 +45,6 @@ export type CustomEventPayload = {
 
 export type DashboardPlan = {
   dashboardTitle: string;
-  groups: DashboardGroupPlan[];
+  sections: DashboardSectionPlan[];
   customEvents: CustomEventPayload[];
 };

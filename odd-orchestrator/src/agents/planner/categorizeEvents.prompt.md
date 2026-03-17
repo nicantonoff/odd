@@ -21,6 +21,8 @@ Regras de determinismo:
 - Preserve todos os campos exatamente como chegaram.
 - Não reescreva eventKey, eventTitle, stage, actor, service, tags, dashboardWidget ou queryHint.
 - Cada evento deve aparecer exatamente uma vez, em apenas uma categoria.
+- Se o evento contiver `exception`, `_exception`, `exception:true`, `outcome:problem`, `event_type:exception`, `error`, `fail`, `failure`, `reject`, `timeout`, `falha` ou `erro` em qualquer campo, ele deve obrigatoriamente ir para `problems`, mesmo que também contenha termos de sucesso como `completed` ou `approved`.
+- Um evento de exception nunca pode aparecer em `normal`.
 - Em caso de ambiguidade, prefira "problem" se o evento indicar bloqueio, degradação, rejeição, timeout ou alerta operacional.
 - Em caso de ambiguidade entre tentativa e sucesso, prefira "normal" apenas quando houver evidência explícita de conclusão bem-sucedida.
 - Mantenha a ordem original por "ordem" dentro de cada categoria.

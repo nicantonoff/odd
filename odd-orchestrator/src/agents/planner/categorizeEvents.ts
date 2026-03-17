@@ -15,6 +15,21 @@ const NORMAL_KEYWORDS = [
   'concluído', 'confirmado'
 ];
 
+const STRONG_PROBLEM_SIGNALS = [
+  'exception',
+  '_exception',
+  'exception:true',
+  'outcome:problem',
+  'event_type:exception',
+  'error',
+  'fail',
+  'failure',
+  'reject',
+  'timeout',
+  'falha',
+  'erro'
+];
+
 const responseFormat = {
   type: 'object',
   properties: {
@@ -112,6 +127,11 @@ function scoreByKeywords(row: EventStormingRow): { problemScore: number; normalS
   return { problemScore, normalScore };
 }
 
+function hasStrongProblemSignal(row: EventStormingRow): boolean {
+  const haystack = `${row.eventKey} ${row.eventTitle} ${row.stage} ${row.tags.join(' ')} ${row.queryHint}`.toLowerCase();
+  return STRONG_PROBLEM_SIGNALS.some((signal) => haystack.includes(signal));
+}
+
 function normalizeCategorization(result: CategorizedEvents, inputRows: EventStormingRow[]): CategorizedEvents {
   const originalProblems = new Set(result.problems.map((row) => row.eventKey));
   const normalizedProblems: EventStormingRow[] = [];
@@ -119,6 +139,12 @@ function normalizeCategorization(result: CategorizedEvents, inputRows: EventStor
 
   for (const row of inputRows.slice().sort((left, right) => left.ordem - right.ordem)) {
     const { problemScore, normalScore } = scoreByKeywords(row);
+    const strongProblemSignal = hasStrongProblemSignal(row);
+    if (strongProblemSignal) {
+      normalizedProblems.push(row);
+      continue;
+    }
+
     const forcedProblem = problemScore > 0 && problemScore >= normalScore;
     const forcedNormal = normalScore > 0 && normalScore > problemScore;
     const isProblem = forcedProblem || (!forcedNormal && originalProblems.has(row.eventKey));

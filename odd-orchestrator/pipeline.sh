@@ -16,8 +16,8 @@ rm -rf terraform/generated/*dash*
 
 echo "🧠 Executando planner..."
 PLANNER_OUTPUT=$(npm run planner -- \
-  --input ./samples/event-storming.xlsx \
-  --dashboard-title "GlenioJourney")
+  --input ./samples/event-storming-tuangou-project-format.xlsx \
+  --dashboard-title "TuangouODDJourney")
 
 echo "$PLANNER_OUTPUT"
 

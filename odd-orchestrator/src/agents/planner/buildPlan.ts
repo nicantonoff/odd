@@ -100,7 +100,7 @@ function buildKpiWidgets(events: EventStormingRow[], sectionType: 'problems' | '
       sectionType,
       sourceEventKeys: [event.eventKey],
       visualRole: 'kpi',
-      palette: sectionType === 'problems' ? (index === 0 ? 'alert' : 'warning') : 'success'
+      palette: sectionType === 'problems' ? 'alert' : 'success'
     }));
 }
 

@@ -9,14 +9,11 @@ type DashboardWidget = {
 
 const GRID = {
   width: 72,
-  heroX: 18,
   heroY: 0,
-  heroWidth: 36,
+  heroPadding: 6,
   heroHeight: 12,
   sectionGap: 2,
-  cardWidth: 24,
   cardHeight: 10,
-  trendWidth: 24,
   trendHeight: 10
 };
 
@@ -140,34 +137,46 @@ function createEmptyWidget(id: string, title: string, widgetType: 'query_value' 
 function buildHeroWidget(plan: DashboardPlan): DashboardWidget {
   const hero = plan.bands[0].widgets[0] ?? createEmptyWidget('hero_empty', 'Sem dados no período', 'query_value', 'neutral');
   const titlePrefix = hero.sectionType === 'problems' ? 'Alerta Critico' : 'Saude do Fluxo';
+  const width = GRID.width - GRID.heroPadding * 2;
   return createDataWidget(hero, `${titlePrefix} | ${hero.title}`, {
-    x: GRID.heroX,
+    x: GRID.heroPadding,
     y: GRID.heroY,
-    width: GRID.heroWidth,
+    width,
     height: GRID.heroHeight
   });
 }
 
+function computeBalancedColumns(count: number): number {
+  if (count <= 1) return 1;
+  if (count === 2) return 2;
+  if (count <= 3) return 3;
+  return Math.ceil(count / 2);
+}
+
 function buildKpiWidgets(widgets: DashboardWidgetPlan[], sectionLabel: string, startY: number, emptyTitle: string, emptyPalette: DashboardWidgetPlan['palette']): { widgets: DashboardWidget[]; nextY: number } {
   const data = widgets.length > 0 ? widgets : [createEmptyWidget(`${sectionLabel}_kpi_empty`, emptyTitle, 'query_value', emptyPalette)];
+  const columns = computeBalancedColumns(data.length);
+  const width = Math.floor(GRID.width / columns);
   const laidOut = data.map((widget, index) =>
     createDataWidget(widget, `${sectionLabel} | ${widget.title}`, {
-      x: (index % 3) * GRID.cardWidth,
-      y: startY + Math.floor(index / 3) * GRID.cardHeight,
-      width: GRID.cardWidth,
+      x: (index % columns) * width,
+      y: startY + Math.floor(index / columns) * GRID.cardHeight,
+      width: index % columns === columns - 1 ? GRID.width - ((columns - 1) * width) : width,
       height: GRID.cardHeight
     })
   );
-  return { widgets: laidOut, nextY: startY + Math.ceil(data.length / 3) * GRID.cardHeight };
+  return { widgets: laidOut, nextY: startY + Math.ceil(data.length / columns) * GRID.cardHeight };
 }
 
 function buildTrendWidgets(widgets: DashboardWidgetPlan[], sectionLabel: string, startY: number, emptyTitle: string, emptyPalette: DashboardWidgetPlan['palette']): { widgets: DashboardWidget[]; nextY: number } {
   const data = widgets.length > 0 ? widgets.slice(0, 3) : [createEmptyWidget(`${sectionLabel}_trend_empty`, emptyTitle, 'timeseries', emptyPalette)];
+  const columns = data.length;
+  const width = Math.floor(GRID.width / columns);
   const laidOut = data.map((widget, index) =>
     createDataWidget(widget, `${sectionLabel} | ${widget.title}`, {
-      x: index * GRID.trendWidth,
+      x: index * width,
       y: startY,
-      width: GRID.trendWidth,
+      width: index === columns - 1 ? GRID.width - ((columns - 1) * width) : width,
       height: GRID.trendHeight
     })
   );

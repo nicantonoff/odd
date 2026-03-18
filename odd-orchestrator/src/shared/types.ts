@@ -31,6 +31,8 @@ export type DashboardWidgetPlan = {
   sourceEventKeys: string[];
   visualRole: DashboardVisualRole;
   palette: DashboardPalette;
+  thresholdValue?: number;
+  thresholdDirection?: 'above_bad' | 'below_bad' | 'at_least_good';
 };
 
 export type DashboardBandPlan = {

@@ -130,8 +130,41 @@ function thresholdColor(palette: DashboardPalette): string | undefined {
   return undefined;
 }
 
-function singleValueTile(title: string, query: string, palette: DashboardPalette): DynatraceDataTile {
-  const color = thresholdColor(palette);
+function singleValueThresholds(widget: DashboardWidgetPlan) {
+  if (typeof widget.thresholdValue !== 'number' || !widget.thresholdDirection) return undefined;
+
+  if (widget.thresholdDirection === 'at_least_good') {
+    return [{
+      id: 1,
+      field: 'count' as const,
+      title: '' as const,
+      isEnabled: true as const,
+      rules: [
+        { id: 0, color: '#dc172a', comparator: '≥' as const, label: '' as const, value: 0 },
+        { id: 1, color: '#2f8f46', comparator: '≥' as const, label: '' as const, value: widget.thresholdValue }
+      ]
+    }];
+  }
+
+  if (widget.thresholdDirection === 'above_bad') {
+    return [{
+      id: 1,
+      field: 'count' as const,
+      title: '' as const,
+      isEnabled: true as const,
+      rules: [
+        { id: 0, color: '#2f8f46', comparator: '≥' as const, label: '' as const, value: 0 },
+        { id: 1, color: '#dc172a', comparator: '≥' as const, label: '' as const, value: widget.thresholdValue + 1 }
+      ]
+    }];
+  }
+
+  return undefined;
+}
+
+function singleValueTile(title: string, query: string, widget: DashboardWidgetPlan): DynatraceDataTile {
+  const color = thresholdColor(widget.palette);
+  const thresholds = singleValueThresholds(widget);
   return {
     title,
     type: 'data',
@@ -139,17 +172,17 @@ function singleValueTile(title: string, query: string, palette: DashboardPalette
     visualization: 'singleValue',
     visualizationSettings: {
       autoSelectVisualization: false,
-      ...(color ? {
+      ...(thresholds ? { thresholds } : color ? {
         thresholds: [{
           id: 1,
           field: 'count',
-          title: '',
+          title: '' as const,
           isEnabled: true,
           rules: [{
             id: 0,
             color,
             comparator: '≥',
-            label: '',
+            label: '' as const,
             value: 0
           }]
         }]
@@ -276,7 +309,7 @@ function buildHeroTile(
     return GRID.heroHeight + GRID.sectionGap;
   }
 
-  addTile(document, id, singleValueTile(widget.title, dqlForSingleValue(widget), widget.palette), {
+  addTile(document, id, singleValueTile(widget.title, dqlForSingleValue(widget), widget), {
     x: 0,
     y: 0,
     w: GRID.totalColumns,
@@ -326,7 +359,7 @@ function buildBandTiles(
 
     const tile = widget.widgetType === 'timeseries'
       ? lineChartTile(widget.title, dqlForTimeseries(widget), widget.palette)
-      : singleValueTile(widget.title, dqlForSingleValue(widget), widget.palette);
+      : singleValueTile(widget.title, dqlForSingleValue(widget), widget);
 
     addTile(document, id, tile, {
       x: left,

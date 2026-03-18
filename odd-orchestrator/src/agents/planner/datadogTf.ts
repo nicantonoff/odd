@@ -45,6 +45,27 @@ function linePalette(widget: DashboardWidgetPlan): string {
 }
 
 function conditionalFormats(widget: DashboardWidgetPlan): Record<string, unknown>[] {
+  if (widget.thresholdDirection === 'at_least_good' && typeof widget.thresholdValue === 'number') {
+    return [
+      { comparator: '<', value: widget.thresholdValue, palette: 'black_on_light_red' },
+      { comparator: '>=', value: widget.thresholdValue, palette: 'black_on_light_green' }
+    ];
+  }
+
+  if (widget.thresholdDirection === 'above_bad' && typeof widget.thresholdValue === 'number') {
+    return [
+      { comparator: '>', value: widget.thresholdValue, palette: 'black_on_light_red' },
+      { comparator: '<=', value: widget.thresholdValue, palette: 'black_on_light_green' }
+    ];
+  }
+
+  if (widget.thresholdDirection === 'below_bad' && typeof widget.thresholdValue === 'number') {
+    return [
+      { comparator: '<', value: widget.thresholdValue, palette: 'black_on_light_red' },
+      { comparator: '>=', value: widget.thresholdValue, palette: 'black_on_light_green' }
+    ];
+  }
+
   if (widget.palette === 'alert') {
     return [
       { comparator: '>', value: 0, palette: 'black_on_light_red' },

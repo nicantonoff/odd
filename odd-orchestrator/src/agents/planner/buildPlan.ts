@@ -68,7 +68,9 @@ function buildHeroWidget(problems: EventStormingRow[], normal: EventStormingRow[
       sectionType: 'problems',
       sourceEventKeys: [topProblem.eventKey],
       visualRole: 'hero_alert',
-      palette: 'alert'
+      palette: 'alert',
+      thresholdValue: 0,
+      thresholdDirection: 'above_bad'
     };
   }
 
@@ -83,7 +85,9 @@ function buildHeroWidget(problems: EventStormingRow[], normal: EventStormingRow[
     sectionType: 'normal',
     sourceEventKeys: allNormal.map((event) => event.eventKey),
     visualRole: 'hero_alert',
-    palette: 'success'
+    palette: 'success',
+    thresholdValue: 10,
+    thresholdDirection: 'at_least_good'
   };
 }
 

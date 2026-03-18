@@ -7,6 +7,7 @@
 O ecossistema **odd** ainda está em construção.
 
 - **odd-orchestrator** — **Release Candidate (RC)**. É o componente mais maduro hoje e já cobre o fluxo de Event Storming para plano de dashboard, geração de Terraform e aplicação no Datadog.
+  Hoje também já possui suporte funcional para Dynatrace, embora o caminho Datadog ainda seja o mais maduro.
 - **Demais agentes e pipeline multi-agente** — **em construção**. As peças fora do orchestrator ainda estão evoluindo em arquitetura, contratos e integração end-to-end.
 
 Se você quer avaliar o projeto agora, o ponto de entrada recomendado é o diretório `odd-orchestrator/`.
@@ -71,14 +72,14 @@ O odd resolve isso com um pipeline automatizado que conecta essas etapas usando 
   ┌─────────────────┐
   │  🚀 Applier      │  Executa terraform apply
   │                  │  Ingere eventos sintéticos
-  │                  │  no Datadog
+  │                  │  no Datadog ou Dynatrace
   └────────┬────────┘
            │
            ▼
   ┌─────────────────┐
-  │  📊 Dashboard    │  Dashboard no Datadog com
-  │     Datadog      │  event streams organizados
-  │                  │  por domínio e categorias
+  │  📊 Dashboard    │  Dashboard operacional em
+  │  Datadog/DT      │  Datadog ou Dynatrace
+  │                  │  com eventos e KPIs por fluxo
   └─────────────────┘
 ```
 
@@ -86,10 +87,10 @@ O odd resolve isso com um pipeline automatizado que conecta essas etapas usando 
 
 ### odd-orchestrator (TypeScript/Node.js) — Release Candidate
 
-Responsável por transformar planilhas de Event Storming em dashboards do Datadog via Terraform.
+Responsável por transformar planilhas de Event Storming em dashboards via Terraform para Datadog e Dynatrace.
 
 - **Planner** — Lê arquivos XLSX/CSV de Event Storming, categoriza eventos em "problemas" (erros, falhas, rejeições) e "normais" (sucessos, aprovações), e gera o plano do dashboard junto com o código Terraform
-- **Applier** — Executa `terraform plan/apply` para criar o dashboard no Datadog e ingere eventos customizados sintéticos para popular os event streams
+- **Applier** — Executa `terraform plan/apply` para criar o dashboard no provider selecionado e ingere eventos customizados sintéticos para popular os painéis
 
 Cada prompt do Planner pode usar um modelo de LLM diferente (Ollama local, OpenAI ou Anthropic Claude).
 
@@ -164,20 +165,127 @@ O objetivo é que a distância entre a intenção e a observabilidade seja zero.
 
 ### odd-orchestrator
 
+O `odd-orchestrator` é hoje o ponto de entrada recomendado do repositório. Ele já suporta:
+
+- geração de dashboard para `datadog`
+- geração de dashboard para `dynatrace`
+- ingestão de eventos sintéticos nos dois providers
+- execução ponta a ponta via `pipeline.sh`
+
+#### Instalação
+
 ```bash
 cd odd-orchestrator
 npm install
 npm run build
-
-# Gerar plano de dashboard a partir de Event Storming
-npm run planner -- --input ./samples/event-storming.xlsx --dashboard-title "Meu Dashboard"
-
-# Aplicar no Datadog (requer DD_API_KEY, DD_APP_KEY, DD_SITE)
-npm run applier -- --terraform-dir ./terraform --events-file ./generated/custom-events.json
-
-# Apenas verificar o plano sem aplicar
-npm run applier -- --terraform-dir ./terraform --events-file ./generated/custom-events.json --dry-run
 ```
+
+#### Configuração de ambiente
+
+Crie `.env` a partir de `.env.example`.
+
+Exemplo mínimo:
+
+```dotenv
+DD_API_KEY=XXXXXX
+DD_APP_KEY=XXXXXX
+DD_SITE=datadoghq.com
+DD_API_BASE_URL=https://api.datadoghq.com
+DD_EVENT_BATCH_SIZE=10
+
+OLLAMA_ENABLED=true
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen2.5-coder:14b
+
+DYNATRACE_ENV_URL=https://SEU-AMBIENTE.live.dynatrace.com
+DYNATRACE_API_TOKEN=xxxxxx
+DYNATRACE_PLATFORM_TOKEN=xxxxxx
+DYNATRACE_EVENT_TIMEOUT_MINUTES=15
+```
+
+Observações:
+
+- `DYNATRACE_API_TOKEN` é usado para ingestão em `/api/v2/events/ingest`
+- `DYNATRACE_PLATFORM_TOKEN` é usado pelo provider Terraform ao criar dashboards novos via `dynatrace_document`
+- `OLLAMA_BASE_URL` deve preferencialmente usar `127.0.0.1`, não `localhost`
+
+#### Pipeline ponta a ponta
+
+Uso:
+
+```bash
+./pipeline.sh [datadog|dynatrace] [planilha.xlsx|planilha.csv] [dashboard-title]
+```
+
+Exemplos:
+
+```bash
+./pipeline.sh
+./pipeline.sh datadog
+./pipeline.sh datadog ./samples/event-storming.xlsx "Meu Dashboard"
+./pipeline.sh dynatrace ./samples/value_stream_confirmacao_pagamento_completa.xlsx "PagamentoCompleto"
+```
+
+Comportamento atual do script:
+
+- carrega o `.env`
+- valida a saúde do Ollama
+- executa o `planner`
+- descobre o diretório de saída em `generated/...`
+- executa o `applier` com o provider selecionado
+
+#### Execução manual
+
+Planner Datadog:
+
+```bash
+npm run planner -- \
+  --input ./samples/event-storming.xlsx \
+  --dashboard-title "Meu Dashboard" \
+  --provider datadog
+```
+
+Planner Dynatrace:
+
+```bash
+npm run planner -- \
+  --input ./samples/event-storming.xlsx \
+  --dashboard-title "Meu Dashboard" \
+  --provider dynatrace
+```
+
+Applier Datadog:
+
+```bash
+npm run applier -- \
+  --terraform-dir ./terraform \
+  --events-file ./generated/<run>/custom-events.json \
+  --provider datadog
+```
+
+Applier Dynatrace:
+
+```bash
+npm run applier -- \
+  --terraform-dir ./terraform-dynatrace \
+  --events-file ./generated/<run>/custom-events.json \
+  --provider dynatrace
+```
+
+Dry run:
+
+```bash
+npm run applier -- \
+  --terraform-dir ./terraform \
+  --events-file ./generated/<run>/custom-events.json \
+  --provider datadog \
+  --dry-run
+```
+
+#### Providers e maturidade
+
+- `datadog`: caminho mais maduro hoje
+- `dynatrace`: já cria dashboard nova, aplica Terraform e ingere eventos, mas ainda está evoluindo na paridade visual com o Datadog
 
 ### Stack Docker (Gertrudes + infra)
 
@@ -211,9 +319,10 @@ Veja exemplos em `odd-orchestrator/samples/`.
 ## Artefatos gerados
 
 ### Pelo Planner
-- `generated/plan.json` — Estrutura do dashboard em bandas visuais fixas (hero, KPIs e tendências)
-- `generated/custom-events.json` — Eventos sintéticos para o Datadog
-- `terraform/generated/{runId}-dashboard.auto.tf.json` — Código Terraform
+- `generated/<inputName>_<timestamp>/plan.json` — Estrutura do dashboard em bandas visuais fixas (hero, KPIs e tendências)
+- `generated/<inputName>_<timestamp>/custom-events.json` — Eventos sintéticos para Datadog ou Dynatrace
+- `terraform/generated/<inputName>-dashboard.auto.tf.json` — Código Terraform para Datadog
+- `terraform-dynatrace/generated/<inputName>-dashboard.auto.tf.json` — Código Terraform para Dynatrace
 
 ### Pelo Applier
 - `generated/apply-report.json` — Relatório de sucesso/falha da aplicação
@@ -231,5 +340,7 @@ Veja exemplos em `odd-orchestrator/samples/`.
 | Variável | Componente | Uso |
 |----------|------------|-----|
 | `DD_API_KEY`, `DD_APP_KEY`, `DD_SITE` | Applier | Autenticação no Datadog |
-| `OLLAMA_ENABLED`, `OLLAMA_MODEL` | Planner | LLM local para enhancement de títulos |
+| `DYNATRACE_ENV_URL`, `DYNATRACE_API_TOKEN` | Applier | Ingestão de eventos no Dynatrace |
+| `DYNATRACE_PLATFORM_TOKEN` | Terraform Dynatrace | Criação de dashboards novas via `dynatrace_document` |
+| `OLLAMA_ENABLED`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Planner | LLM local para categorização e suporte ao planner |
 | `CHUNK_SIZE`, `CHUNK_OVERLAP` | Airflow | Configuração de chunking para indexação RAG |

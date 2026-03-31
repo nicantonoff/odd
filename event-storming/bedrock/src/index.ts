@@ -16,7 +16,6 @@ async function main(): Promise<void> {
     ...args,
     inputImage: path.resolve(args.inputImage),
     outputDir: path.resolve(args.outputDir),
-    endAt: args.endAt,
     imageObservation: args.imageObservation ? path.resolve(args.imageObservation) : undefined,
     candidateContext: args.candidateContext ? path.resolve(args.candidateContext) : undefined
   };

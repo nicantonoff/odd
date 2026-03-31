@@ -5,12 +5,6 @@ export const ObservedEventRoleSchema = z.enum(['protagonist', 'supporting', 'unk
 export const ObservedColorSchema = z.enum(['#FF0000', '#305CDE', 'unknown']);
 export const ObservedArrowStyleSchema = z.enum(['solid', 'dashed', 'unknown']);
 export const ObservedFlowTypeSchema = z.enum(['main', 'alternate', 'unknown']);
-export const ArrowHintSchema = z.object({
-  arrowStyle: ObservedArrowStyleSchema,
-  nearbyTexts: z.array(z.string().min(1)),
-  confidence: z.number().min(0).max(1),
-  reasoning: z.string().min(1)
-});
 
 export const EventVisualSemanticSchema = z.object({
   eventTitle: z.string().min(1),
@@ -35,22 +29,6 @@ export const ObservedFlowSchema = z.object({
   touchPoints: z.array(z.string().min(1)),
   confidence: z.number().min(0).max(1),
   reasoning: z.string().min(1)
-});
-
-export const VisualObservationSchema = z.object({
-  touchPointsDetected: z.array(z.string()),
-  textsOutsideShapes: z.array(z.string()),
-  actorsDetected: z.array(z.string()),
-  servicesDetected: z.array(z.string()),
-  uncertainItems: z.array(z.string()),
-  arrowHints: z.array(ArrowHintSchema)
-});
-
-export const InterpretedObservationSchema = z.object({
-  eventVisualSemantics: z.array(EventVisualSemanticSchema),
-  touchPointEventCorrelations: z.array(TouchPointCorrelationSchema),
-  flowsDetected: z.array(ObservedFlowSchema),
-  assumptions: z.array(z.string())
 });
 
 export const ImageObservationSchema = z.object({
@@ -81,7 +59,8 @@ export const CandidateEventSchema = z.object({
   stage: z.string().min(1),
   actor: z.string(),
   service: z.string(),
-  tags: z.string()
+  tags: z.string(),
+  source_touch_point: z.string().optional()
 });
 
 export const CandidateContextSchema = z.object({
@@ -125,7 +104,14 @@ export const RecognizedRowSchema = z.object({
   service: z.string().min(1),
   tags: z.string().min(1),
   dashboard_widget: AllowedWidgetSchema,
-  query_hint: z.string().min(1)
+  query_hint: z.string().min(1),
+  source_row: z.number().int().positive().nullable().optional(),
+  source_touch_point: z.string().min(1).optional()
+});
+
+export const ConversionNoteSchema = z.object({
+  item: z.string().min(1),
+  detail: z.string().min(1)
 });
 
 export const RecognizedContextSchema = z.object({
@@ -137,7 +123,8 @@ export const RecognizedContextSchema = z.object({
 export const WorkbookSchema = z.object({
   sheetName: z.string().min(1),
   columns: z.array(z.string().min(1)).min(1),
-  rows: z.array(RecognizedRowSchema).min(1)
+  rows: z.array(RecognizedRowSchema).min(1),
+  notes: z.array(ConversionNoteSchema).default([])
 });
 
 export const REQUIRED_COLUMNS = [
@@ -152,9 +139,13 @@ export const REQUIRED_COLUMNS = [
   'query_hint'
 ] as const;
 
+export const PROJECT_FORMAT_COLUMNS = [
+  ...REQUIRED_COLUMNS,
+  'source_row',
+  'source_touch_point'
+] as const;
+
 export type ImageObservation = z.infer<typeof ImageObservationSchema>;
-export type VisualObservation = z.infer<typeof VisualObservationSchema>;
-export type InterpretedObservation = z.infer<typeof InterpretedObservationSchema>;
 export type CandidateContext = z.infer<typeof CandidateContextSchema>;
 export type NormalizationReview = z.infer<typeof NormalizationReviewSchema>;
 export type RecognizedContext = z.infer<typeof RecognizedContextSchema>;

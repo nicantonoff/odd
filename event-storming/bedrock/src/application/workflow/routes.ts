@@ -29,14 +29,10 @@ export function routeAfterObservation(state: WorkflowGraphState) {
   logger.info('Avaliando transição após observação da imagem', {
     observeAttempts: state.observeAttempts,
     maxAttempts: state.maxAttempts,
-    endAt: state.endAt,
     hasValidObservation
   });
 
   if (hasValidObservation) {
-    if (state.endAt === 'observe') {
-      return END;
-    }
     return 'extract_events';
   }
   if (state.observeAttempts < state.maxAttempts) {

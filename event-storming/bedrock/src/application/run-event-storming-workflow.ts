@@ -19,7 +19,6 @@ export async function runEventStormingWorkflow(args: CliArgs): Promise<void> {
     outputDir: args.outputDir,
     provider: args.provider,
     startFrom: args.startFrom,
-    endAt: args.endAt,
     observeModel: agentModels.observeModel,
     extractModel: agentModels.extractModel,
     normalizeModel: agentModels.normalizeModel,
@@ -35,7 +34,6 @@ export async function runEventStormingWorkflow(args: CliArgs): Promise<void> {
         outputDir: args.outputDir,
         provider: args.provider,
         startFrom: args.startFrom,
-        endAt: args.endAt,
         observeModel: agentModels.observeModel,
         extractModel: agentModels.extractModel,
         normalizeModel: agentModels.normalizeModel,
@@ -47,12 +45,10 @@ export async function runEventStormingWorkflow(args: CliArgs): Promise<void> {
         runName: 'event_storming_graph',
         tags: ['workflow', `provider:${args.provider}`],
         metadata: {
-          serviceName: process.env.LANGSMITH_SERVICE_NAME,
           inputImage: args.inputImage,
           outputDir: args.outputDir,
           provider: args.provider,
           startFrom: args.startFrom,
-          endAt: args.endAt,
           observeModel: agentModels.observeModel,
           extractModel: agentModels.extractModel,
           normalizeModel: agentModels.normalizeModel,
@@ -69,30 +65,12 @@ export async function runEventStormingWorkflow(args: CliArgs): Promise<void> {
         extractModel: agentModels.extractModel,
         normalizeModel: agentModels.normalizeModel,
         provider: args.provider,
-        startFrom: args.startFrom,
-        endAt: args.endAt
+        startFrom: args.startFrom
       }
     }
   );
 
   const result = await invokeWorkflow();
-
-  if (args.endAt === 'observe') {
-    if (!result.imageObservation) {
-      logger.error('Execução encerrada sem observação válida no modo end-at observe', {
-        failures: result.failures
-      });
-      throw new Error(`Workflow incompleto. Falhas: ${result.failures.join(' | ')}`);
-    }
-
-    const observationPath = path.join(args.outputDir, 'image-observation.json');
-    await writeJsonFile(observationPath, result.imageObservation);
-
-    logger.info('Workflow encerrado em observe com sucesso', {
-      observationPath
-    });
-    return;
-  }
 
   const requiredStates = {
     imageObservation: args.startFrom === 'observe' ? Boolean(result.imageObservation) : true,

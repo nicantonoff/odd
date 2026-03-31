@@ -1,12 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { Logger } from '../../shared/logger.js';
+import { writeJsonFile } from '../filesystem/file-system.js';
 
 const logger = new Logger('ollama-vision-json-client');
 
 export async function invokeOllamaVisionJson(
   model: string,
   imagePath: string,
-  prompt: string
+  prompt: string,
+  requestOutputPath?: string
 ): Promise<unknown> {
   const baseUrl = (process.env.OLLAMA_BASE_URL ?? 'http://127.0.0.1:11434').replace('://localhost:', '://127.0.0.1:');
   const endpoint = `${baseUrl.replace(/\/$/, '')}/api/generate`;
@@ -16,11 +18,23 @@ export async function invokeOllamaVisionJson(
     model,
     prompt,
     stream: false,
+    keep_alive: '15m',
     images: [imageBuffer.toString('base64')],
     options: {
-      temperature: 0
+      temperature: 0,
+      // num_predict: 1400,
+      // num_ctx: 8192
     }
   };
+
+  if (requestOutputPath) {
+    logger.info('Persistindo payload bruto da chamada ao Ollama vision', {
+      requestOutputPath,
+      model,
+      imagePath
+    });
+    await writeJsonFile(requestOutputPath, body);
+  }
 
   logger.info('Invocando Ollama vision por endpoint generate', {
     endpoint,

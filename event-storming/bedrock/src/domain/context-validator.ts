@@ -1,113 +1,15 @@
 import {
   ImageObservation,
-  InterpretedObservation,
   CandidateContext,
   RecognizedContext,
-  VisualObservation,
   WorkbookPayload,
   WorkflowStage,
-  REQUIRED_COLUMNS
+  PROJECT_FORMAT_COLUMNS
 } from './event-storming-schema.js';
 import { Logger } from '../shared/logger.js';
 import { slugify, unique } from '../shared/text.js';
 
 const logger = new Logger('context-validator');
-
-export function validateVisualObservation(observation: VisualObservation | null): string[] {
-  logger.info('Validando observação visual bruta', {
-    hasObservation: Boolean(observation)
-  });
-
-  if (!observation) {
-    return ['observe: observação visual ausente.'];
-  }
-
-  const issues: string[] = [];
-  if (observation.touchPointsDetected.length === 0) {
-    issues.push('touchPointsDetected não pode estar vazio.');
-  }
-  if (observation.textsOutsideShapes.length === 0) {
-    issues.push('textsOutsideShapes não pode estar vazio.');
-  }
-
-  const normalizedIssues = unique(issues);
-  if (normalizedIssues.length > 0) {
-    logger.warn('Falhas encontradas na validação da observação visual', {
-      issues: normalizedIssues
-    });
-  }
-  return normalizedIssues;
-}
-
-export function validateInterpretedObservation(
-  visualObservation: VisualObservation | null,
-  interpretedObservation: InterpretedObservation | null
-): string[] {
-  logger.info('Validando interpretação da observação', {
-    hasVisualObservation: Boolean(visualObservation),
-    hasInterpretedObservation: Boolean(interpretedObservation)
-  });
-
-  if (!visualObservation) {
-    return ['observe: observação visual ausente para interpretação.'];
-  }
-
-  if (!interpretedObservation) {
-    return ['observe: interpretação da observação ausente.'];
-  }
-
-  const issues: string[] = [];
-  const knownTouchPoints = new Set(visualObservation.touchPointsDetected);
-  const knownEvents = new Set(visualObservation.textsOutsideShapes);
-
-  if (interpretedObservation.eventVisualSemantics.length === 0) {
-    issues.push('eventVisualSemantics não pode estar vazio.');
-  }
-  if (interpretedObservation.touchPointEventCorrelations.length === 0) {
-    issues.push('touchPointEventCorrelations não pode estar vazio.');
-  }
-  if (interpretedObservation.flowsDetected.length === 0) {
-    issues.push('flowsDetected não pode estar vazio.');
-  }
-
-  for (const semantic of interpretedObservation.eventVisualSemantics) {
-    if (!knownEvents.has(semantic.eventTitle)) {
-      issues.push(`eventVisualSemantic fora de textsOutsideShapes: ${semantic.eventTitle}`);
-    }
-  }
-
-  for (const correlation of interpretedObservation.touchPointEventCorrelations) {
-    if (!knownTouchPoints.has(correlation.touchPointTitle)) {
-      issues.push(`touchPointCorrelation com touch point desconhecido: ${correlation.touchPointTitle}`);
-    }
-    for (const eventTitle of correlation.eventsObservedAroundTouchPoint) {
-      if (!knownEvents.has(eventTitle)) {
-        issues.push(`touchPointCorrelation com evento fora de textsOutsideShapes: ${eventTitle}`);
-      }
-    }
-  }
-
-  for (const flow of interpretedObservation.flowsDetected) {
-    for (const eventTitle of flow.orderedEventTitles) {
-      if (!knownEvents.has(eventTitle)) {
-        issues.push(`flowDetected com evento fora de textsOutsideShapes: ${eventTitle}`);
-      }
-    }
-    for (const touchPointTitle of flow.touchPoints) {
-      if (!knownTouchPoints.has(touchPointTitle)) {
-        issues.push(`flowDetected com touch point desconhecido: ${touchPointTitle}`);
-      }
-    }
-  }
-
-  const normalizedIssues = unique(issues);
-  if (normalizedIssues.length > 0) {
-    logger.warn('Falhas encontradas na validação da interpretação da observação', {
-      issues: normalizedIssues
-    });
-  }
-  return normalizedIssues;
-}
 
 export function validateImageObservation(observation: ImageObservation | null): string[] {
   logger.info('Validando observação da imagem', {
@@ -239,20 +141,20 @@ export function validateRecognizedContext(
   });
 
   for (const row of context.rows) {
-    if (!/^[a-z0-9_]+$/.test(row.event_key)) {
+    if (!/^[a-z0-9.]+$/.test(row.event_key)) {
       issues.push(`event_key inválido: ${row.event_key}`);
     }
     if (!/^[a-z0-9_]+$/.test(row.stage)) {
       issues.push(`stage inválido: ${row.stage}`);
     }
-    if (!/^[a-z0-9_]+$/.test(slugify(row.service))) {
+    if (!/^[a-z0-9.]+$/.test(row.service)) {
       issues.push(`service inválido: ${row.service}`);
     }
     if (row.stage === row.event_key) {
       issues.push(`stage não pode ser igual a event_key: ${row.event_key}`);
     }
 
-    const expectedQueryHint = `tags:(event_key:${row.event_key} service:${slugify(row.service)} source:odd)`;
+    const expectedQueryHint = `tags:(event_key:${row.event_key} service:${row.service} source:odd)`;
     if (row.query_hint !== expectedQueryHint) {
       issues.push(`query_hint inválido para ${row.event_key}`);
     }
@@ -295,17 +197,20 @@ export function validateWorkbook(workbook: WorkbookPayload | null): string[] {
   }
 
   const issues: string[] = [];
-  if (workbook.sheetName !== 'event_storming') {
-    issues.push('sheetName deve ser event_storming.');
+  if (workbook.sheetName !== 'project_input') {
+    issues.push('sheetName deve ser project_input.');
   }
 
-  if (JSON.stringify(workbook.columns) !== JSON.stringify(REQUIRED_COLUMNS)) {
+  if (JSON.stringify(workbook.columns) !== JSON.stringify(PROJECT_FORMAT_COLUMNS)) {
     issues.push('columns não corresponde ao layout obrigatório.');
   }
 
   for (const row of workbook.rows) {
     if (typeof row.tags !== 'string' || row.tags.trim() === '') {
       issues.push(`tags inválido para ${row.event_key}`);
+    }
+    if (!row.source_touch_point || row.source_touch_point.trim() === '') {
+      issues.push(`source_touch_point inválido para ${row.event_key}`);
     }
   }
 

@@ -1,13 +1,40 @@
 import {
   CandidateContext,
   ImageObservation,
+  InterpretedObservation,
   NormalizationReview,
-  RecognizedContext
+  RecognizedContext,
+  VisualObservation
 } from './event-storming-schema.js';
 import { Logger } from '../shared/logger.js';
 import { slugify, unique } from '../shared/text.js';
 
 const logger = new Logger('context-normalizer');
+
+export function mergeObservedImageContext(
+  visualObservation: VisualObservation,
+  interpretedObservation: InterpretedObservation
+): ImageObservation {
+  logger.info('Compondo observação final da imagem a partir de subetapas', {
+    touchPointCount: visualObservation.touchPointsDetected.length,
+    outsideTextCount: visualObservation.textsOutsideShapes.length,
+    semanticEventCount: interpretedObservation.eventVisualSemantics.length,
+    correlationCount: interpretedObservation.touchPointEventCorrelations.length,
+    flowCount: interpretedObservation.flowsDetected.length
+  });
+
+  return {
+    touchPointsDetected: visualObservation.touchPointsDetected,
+    textsOutsideShapes: visualObservation.textsOutsideShapes,
+    actorsDetected: visualObservation.actorsDetected,
+    servicesDetected: visualObservation.servicesDetected,
+    uncertainItems: visualObservation.uncertainItems,
+    eventVisualSemantics: interpretedObservation.eventVisualSemantics,
+    touchPointEventCorrelations: interpretedObservation.touchPointEventCorrelations,
+    flowsDetected: interpretedObservation.flowsDetected,
+    assumptions: interpretedObservation.assumptions
+  };
+}
 
 export function candidateContextToRecognizedContext(candidateContext: CandidateContext): RecognizedContext {
   const normalizedCandidateContext = normalizeCandidateContextDomainModels(candidateContext);

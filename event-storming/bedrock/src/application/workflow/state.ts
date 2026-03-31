@@ -12,7 +12,6 @@ export const GraphState = Annotation.Root({
   outputDir: Annotation<string>(),
   provider: Annotation<SupportedProvider>(),
   startFrom: Annotation<'observe' | 'extract' | 'normalize'>(),
-  endAt: Annotation<'observe' | undefined>(),
   observeModel: Annotation<string>(),
   extractModel: Annotation<string>(),
   normalizeModel: Annotation<string>(),

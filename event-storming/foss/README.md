@@ -15,16 +15,26 @@ Instale as dependências do pacote e rode:
 npm install
 
 npm run start -- \
-  --input-image samples/ODD-Payments.png \
+  --input-image samples/ODD-Payments-EventStorming.png \
   --output-dir ./generated/payments \
   --provider ollama
+```
+
+Para executar somente o agente 1:
+
+```bash
+npm run start -- \
+  --input-image samples/ODD-Payments-EventStorming.png \
+  --output-dir ./generated/payments \
+  --provider ollama \
+  --end-at observe
 ```
 
 Para retomar a partir do agente 2:
 
 ```bash
 npm run start -- \
-  --input-image samples/ODD-Payments.png \
+  --input-image samples/ODD-Payments-EventStorming.png \
   --output-dir ./generated/payments \
   --provider ollama \
   --start-from extract \
@@ -35,7 +45,7 @@ Para retomar a partir do agente 3:
 
 ```bash
 npm run start -- \
-  --input-image samples/ODD-Payments.png \
+  --input-image samples/ODD-Payments-EventStorming.png \
   --output-dir ./generated/payments \
   --provider ollama \
   --start-from normalize \
@@ -48,6 +58,7 @@ npm run start -- \
 - `--output-dir`: diretório de saída
 - `--provider`: `ollama` ou `openai`
 - `--start-from`: `observe`, `extract` ou `normalize`. Padrão: `observe`
+- `--end-at`: `observe`. Encerra o workflow após a observação válida
 - `--image-observation`: obrigatório com `--start-from extract`
 - `--candidate-context`: obrigatório com `--start-from normalize`
 - `--model`: fallback global para todos os agentes
@@ -58,7 +69,9 @@ npm run start -- \
 
 ## Saídas
 
-- `01-image-observation.json`: observação visual bruta
+- `01a-visual-observation.json`: inventário visual bruto do board
+- `01b-interpreted-observation.json`: interpretação estrutural derivada do inventário visual
+- `01-image-observation.json`: observação final consolidada do agente `observe`
 - `02-candidate-events.json`: eventos e fluxos candidatos
 - `03-standardized-context.json`: contexto final padronizado
 - `04-workbook.json`: payload determinístico da planilha

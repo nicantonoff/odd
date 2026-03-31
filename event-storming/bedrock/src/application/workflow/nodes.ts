@@ -4,12 +4,9 @@ import {
   CandidateContextSchema,
   ImageObservation,
   ImageObservationSchema,
-  InterpretedObservation,
-  InterpretedObservationSchema,
   NormalizationReviewSchema,
+  PROJECT_FORMAT_COLUMNS,
   REQUIRED_COLUMNS,
-  VisualObservation,
-  VisualObservationSchema,
   WorkbookSchema
 } from '../../domain/event-storming-schema.js';
 import { Logger } from '../../shared/logger.js';
@@ -18,21 +15,18 @@ import { renderPrompt } from '../../infrastructure/filesystem/prompt-repository.
 import { buildChatModel } from '../../infrastructure/llm/chat-model-factory.js';
 import { imageContentFromFile } from '../../infrastructure/llm/image-message.js';
 import { extractRawResponseText, parseJsonResponse } from '../../infrastructure/llm/json-response-parser.js';
-import { invokeOllamaVisionJson } from '../../infrastructure/llm/ollama-vision-json-client.js';
 import {
   canonicalizeContext,
   applyNormalizationReview,
   candidateContextToRecognizedContext,
+  enrichCandidateContextFromObservation,
   imageObservationToCandidateContext,
-  mergeObservedImageContext,
   normalizeCandidateContextDomainModels
 } from '../../domain/context-normalizer.js';
 import {
   validateCandidateContext,
   validateImageObservation,
-  validateInterpretedObservation,
   validateRecognizedContext,
-  validateVisualObservation,
   validateWorkbook
 } from '../../domain/context-validator.js';
 import { WorkflowGraphState } from './state.js';
@@ -47,86 +41,35 @@ export async function observeImageNode(state: WorkflowGraphState) {
   logger.info('Iniciando nó observe_image', {
     attempt,
     inputImage: state.inputImage,
-    feedbackLength: feedback.length,
-    prompts: ['observe-visual.prompt.md', 'interpret-observation.prompt.md']
+    feedbackLength: feedback.length
   });
 
-  const visualPrompt = await renderPrompt('observe-visual.prompt.md', { feedback });
+  const prompt = await renderPrompt('observe-image.prompt.md', { feedback });
 
   const execute = traceStep(
     async () => {
-      logger.info('Iniciando subetapa visual do observe', {
-        attempt,
-        model: state.observeModel,
-        promptFile: 'observe-visual.prompt.md',
-        requestOutputFile: `01a-visual-observation.attempt-${attempt}.ollama-request.json`,
-        rawOutputFile: `01a-visual-observation.attempt-${attempt}.raw.txt`,
-        jsonOutputFile: '01a-visual-observation.json'
-      });
-      const visualPayload = await invokeObserveVisualStep(state, attempt, visualPrompt);
-      await persistRawResponse(state.outputDir, '01a-visual-observation', attempt, visualPayload);
-
-      const visualObservation = sanitizeVisualObservation(
-        VisualObservationSchema.parse(parseJsonResponse(visualPayload))
-      );
-      const visualIssues = validateVisualObservation(visualObservation);
-      if (visualIssues.length > 0) {
-        throw new Error(visualIssues.join('\n'));
-      }
-      await persistStageJson(state.outputDir, '01a-visual-observation.json', visualObservation);
-      logger.info('Subetapa visual do observe concluída', {
-        attempt,
-        touchPointCount: visualObservation.touchPointsDetected.length,
-        outsideTextCount: visualObservation.textsOutsideShapes.length,
-        arrowHintCount: visualObservation.arrowHints.length
-      });
-
-      logger.info('Iniciando subetapa interpretativa do observe', {
-        attempt,
-        model: state.observeModel,
-        promptFile: 'interpret-observation.prompt.md',
-        rawOutputFile: `01b-interpreted-observation.attempt-${attempt}.raw.txt`,
-        jsonOutputFile: '01b-interpreted-observation.json'
-      });
-      const interpretPrompt = await renderPrompt('interpret-observation.prompt.md', {
-        feedback,
-        input_json: JSON.stringify(visualObservation, null, 2)
-      });
-      const interpretedPayload = await invokeObserveInterpretationStep(state, interpretPrompt);
-      await persistRawResponse(state.outputDir, '01b-interpreted-observation', attempt, interpretedPayload);
-
-      const interpretedObservation = sanitizeInterpretedObservation(
-        InterpretedObservationSchema.parse(parseJsonResponse(interpretedPayload)),
-        visualObservation
-      );
-      const interpretedIssues = validateInterpretedObservation(visualObservation, interpretedObservation);
-      if (interpretedIssues.length > 0) {
-        throw new Error(interpretedIssues.join('\n'));
-      }
-      await persistStageJson(state.outputDir, '01b-interpreted-observation.json', interpretedObservation);
-      logger.info('Subetapa interpretativa do observe concluída', {
-        attempt,
-        semanticEventCount: interpretedObservation.eventVisualSemantics.length,
-        correlationCount: interpretedObservation.touchPointEventCorrelations.length,
-        flowCount: interpretedObservation.flowsDetected.length
-      });
+      const response = await buildChatModel(state.provider, state.observeModel).invoke([
+        new SystemMessage(prompt),
+        new HumanMessage({
+          content: [
+            { type: 'text', text: `Arquivo de entrada: ${path.basename(state.inputImage)}` },
+            { type: 'text', text: 'Observe a imagem e retorne apenas o JSON solicitado.' },
+            imageContentFromFile(state.inputImage)
+          ]
+        })
+      ]);
+      const parsedPayload = response.content;
+      await persistRawResponse(state.outputDir, '01-image-observation', attempt, parsedPayload);
 
       const observation = sanitizeImageObservation(
-        ImageObservationSchema.parse(
-          mergeObservedImageContext(visualObservation, interpretedObservation)
-        )
+        ImageObservationSchema.parse(parseJsonResponse(parsedPayload))
       );
       await persistStageJson(state.outputDir, '01-image-observation.json', observation);
 
       logger.info('Nó observe_image concluído com sucesso', {
         attempt,
-        promptSequence: ['observe-visual.prompt.md', 'interpret-observation.prompt.md'],
         touchPointCount: observation.touchPointsDetected.length,
-        outsideTextCount: observation.textsOutsideShapes.length,
-        arrowHintCount: visualObservation.arrowHints.length,
-        semanticEventCount: observation.eventVisualSemantics.length,
-        correlationCount: observation.touchPointEventCorrelations.length,
-        flowCount: observation.flowsDetected.length
+        outsideTextCount: observation.textsOutsideShapes.length
       });
 
       return {
@@ -161,96 +104,6 @@ export async function observeImageNode(state: WorkflowGraphState) {
       failures: [`observe: ${message}`]
     };
   }
-}
-
-async function invokeObserveVisualStep(
-  state: WorkflowGraphState,
-  attempt: number,
-  prompt: string
-): Promise<unknown> {
-  const execute = traceStep(
-    async () => {
-      if (state.provider === 'ollama') {
-        return invokeOllamaVisionJson(
-          state.observeModel,
-          state.inputImage,
-          [
-            prompt,
-            '',
-            `Arquivo de entrada: ${path.basename(state.inputImage)}`,
-            'Observe a imagem e retorne apenas o JSON solicitado.'
-          ].join('\n'),
-          path.join(
-            state.outputDir,
-            `01a-visual-observation.attempt-${attempt}.ollama-request.json`
-          )
-        );
-      }
-
-      const response = await buildChatModel(state.provider, state.observeModel).invoke([
-        new SystemMessage(prompt),
-        new HumanMessage({
-          content: [
-            { type: 'text', text: `Arquivo de entrada: ${path.basename(state.inputImage)}` },
-            { type: 'text', text: 'Observe a imagem e retorne apenas o JSON solicitado.' },
-            imageContentFromFile(state.inputImage)
-          ]
-        })
-      ]);
-
-      logger.debug('Subetapa visual do observe retornou resposta textual', {
-        attempt,
-        provider: state.provider,
-        promptFile: 'observe-visual.prompt.md'
-      });
-      return response.content;
-    },
-    {
-      name: 'observe_visual_substep',
-      runType: 'llm',
-      tags: ['observe', 'substep:visual', `provider:${state.provider}`],
-      metadata: {
-        attempt,
-        provider: state.provider,
-        model: state.observeModel,
-        promptFile: 'observe-visual.prompt.md',
-        inputImage: state.inputImage
-      }
-    }
-  );
-
-  return execute();
-}
-
-async function invokeObserveInterpretationStep(
-  state: WorkflowGraphState,
-  prompt: string
-): Promise<unknown> {
-  const execute = traceStep(
-    async () => {
-      const response = await buildChatModel(state.provider, state.observeModel).invoke([
-        new SystemMessage(prompt),
-        new HumanMessage('Interprete a observação visual e devolva apenas o JSON solicitado.')
-      ]);
-      logger.debug('Subetapa interpretativa do observe retornou resposta textual', {
-        provider: state.provider,
-        promptFile: 'interpret-observation.prompt.md'
-      });
-      return response.content;
-    },
-    {
-      name: 'observe_interpretation_substep',
-      runType: 'llm',
-      tags: ['observe', 'substep:interpretation', `provider:${state.provider}`],
-      metadata: {
-        provider: state.provider,
-        model: state.observeModel,
-        promptFile: 'interpret-observation.prompt.md'
-      }
-    }
-  );
-
-  return execute();
 }
 
 export async function validateImageObservationNode(state: WorkflowGraphState) {
@@ -309,7 +162,8 @@ export async function extractEventsNode(state: WorkflowGraphState) {
 
   const model = buildChatModel(state.provider, state.extractModel);
   const deterministicCandidateContext = normalizeCandidateContextDomainModels(
-    imageObservationToCandidateContext(imageObservation)
+    imageObservationToCandidateContext(imageObservation, { inputImage: state.inputImage }),
+    { inputImage: state.inputImage }
   );
   const execute = traceStep(
     async () => {
@@ -320,7 +174,12 @@ export async function extractEventsNode(state: WorkflowGraphState) {
       await persistRawResponse(state.outputDir, '02-candidate-events', attempt, response.content);
 
       const candidateContext = normalizeCandidateContextDomainModels(
-        CandidateContextSchema.parse(parseJsonResponse(response.content))
+        enrichCandidateContextFromObservation(
+          CandidateContextSchema.parse(parseJsonResponse(response.content)),
+          imageObservation,
+          { inputImage: state.inputImage }
+        ),
+        { inputImage: state.inputImage }
       );
       await persistStageJson(state.outputDir, '02-candidate-events.json', candidateContext);
 
@@ -425,7 +284,9 @@ export async function normalizeContextNode(state: WorkflowGraphState) {
   });
 
   const model = buildChatModel(state.provider, state.normalizeModel);
-  const deterministicContext = candidateContextToRecognizedContext(candidateContext);
+  const deterministicContext = candidateContextToRecognizedContext(candidateContext, {
+    inputImage: state.inputImage
+  });
   const execute = traceStep(
     async () => {
       const response = await model.invoke([
@@ -435,7 +296,9 @@ export async function normalizeContextNode(state: WorkflowGraphState) {
       await persistRawResponse(state.outputDir, '03-standardized-context', attempt, response.content);
 
       const review = NormalizationReviewSchema.parse(parseJsonResponse(response.content));
-      const standardizedContext = canonicalizeContext(applyNormalizationReview(candidateContext, review));
+      const standardizedContext = canonicalizeContext(applyNormalizationReview(candidateContext, review, {
+        inputImage: state.inputImage
+      }));
 
       await persistStageJson(state.outputDir, '03-standardized-context.json', standardizedContext);
 
@@ -535,9 +398,10 @@ export async function createWorkbookNode(state: WorkflowGraphState) {
   const execute = traceStep(
     async () => {
       const workbook = WorkbookSchema.parse({
-        sheetName: 'event_storming',
-        columns: [...REQUIRED_COLUMNS],
-        rows: standardizedContext.rows
+        sheetName: 'project_input',
+        columns: [...PROJECT_FORMAT_COLUMNS],
+        rows: standardizedContext.rows,
+        notes: buildWorkbookNotes(state.inputImage, standardizedContext.assumptions)
       });
 
       await persistStageJson(state.outputDir, '04-workbook.json', workbook);
@@ -650,72 +514,6 @@ async function persistRawResponse(outputDir: string, stagePrefix: string, attemp
   await writeTextFile(filePath, `${extractRawResponseText(payload)}\n`);
 }
 
-function sanitizeVisualObservation(observation: VisualObservation): VisualObservation {
-  return {
-    touchPointsDetected: uniqueStrings(observation.touchPointsDetected),
-    textsOutsideShapes: uniqueStrings(observation.textsOutsideShapes),
-    actorsDetected: uniqueStrings(observation.actorsDetected),
-    servicesDetected: uniqueStrings(observation.servicesDetected),
-    uncertainItems: uniqueStrings(observation.uncertainItems),
-    arrowHints: observation.arrowHints
-      .map((hint) => ({
-        ...hint,
-        nearbyTexts: uniqueStrings(hint.nearbyTexts),
-        reasoning: hint.reasoning.trim()
-      }))
-      .filter((hint) => hint.reasoning !== '')
-  };
-}
-
-function sanitizeInterpretedObservation(
-  observation: InterpretedObservation,
-  visualObservation: VisualObservation
-): InterpretedObservation {
-  const knownEvents = new Set(visualObservation.textsOutsideShapes);
-  const knownTouchPoints = new Set(visualObservation.touchPointsDetected);
-  const semanticByTitle = new Map(
-    observation.eventVisualSemantics
-      .map((semantic) => ({
-        ...semantic,
-        eventTitle: semantic.eventTitle.trim(),
-        reasoning: semantic.reasoning.trim()
-      }))
-      .filter((semantic) => semantic.eventTitle !== '' && knownEvents.has(semantic.eventTitle))
-      .map((semantic) => [semantic.eventTitle, semantic] as const)
-  );
-
-  return {
-    eventVisualSemantics: [...semanticByTitle.values()],
-    touchPointEventCorrelations: observation.touchPointEventCorrelations
-      .map((correlation) => ({
-        ...correlation,
-        touchPointTitle: correlation.touchPointTitle.trim(),
-        eventsObservedAroundTouchPoint: orderObservedEvents(
-          uniqueStrings(correlation.eventsObservedAroundTouchPoint)
-            .filter((eventTitle) => knownEvents.has(eventTitle)),
-          semanticByTitle
-        ),
-        reasoning: correlation.reasoning.trim()
-      }))
-      .filter((correlation) => correlation.touchPointTitle !== '' && knownTouchPoints.has(correlation.touchPointTitle)),
-    flowsDetected: observation.flowsDetected
-      .map((flow) => ({
-        ...flow,
-        name: flow.name.trim(),
-        orderedEventTitles: orderObservedEvents(
-          uniqueStrings(flow.orderedEventTitles)
-            .filter((eventTitle) => knownEvents.has(eventTitle)),
-          semanticByTitle
-        ),
-        touchPoints: uniqueStrings(flow.touchPoints)
-          .filter((touchPointTitle) => knownTouchPoints.has(touchPointTitle)),
-        reasoning: flow.reasoning.trim()
-      }))
-      .filter((flow) => flow.name !== '' && flow.orderedEventTitles.length > 0),
-    assumptions: uniqueStrings(observation.assumptions)
-  };
-}
-
 function sanitizeImageObservation(observation: ImageObservation): ImageObservation {
   const textsOutsideShapes = uniqueStrings(observation.textsOutsideShapes);
   const touchPointsDetected = uniqueStrings(observation.touchPointsDetected);
@@ -753,31 +551,12 @@ function sanitizeImageObservation(observation: ImageObservation): ImageObservati
     actorsDetected: uniqueStrings(observation.actorsDetected),
     servicesDetected: uniqueStrings(observation.servicesDetected),
     uncertainItems,
-    assumptions: uniqueStrings([...observation.assumptions, ...buildObservationAssumptions(uncertainItems)])
+    assumptions: buildObservationAssumptions(uncertainItems)
   };
 }
 
 function uniqueStrings(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
-}
-
-function orderObservedEvents(
-  eventTitles: string[],
-  semanticByTitle: Map<string, InterpretedObservation['eventVisualSemantics'][number]>
-): string[] {
-  return eventTitles.slice().sort((left, right) => {
-    return roleOrder(semanticByTitle.get(left)?.role) - roleOrder(semanticByTitle.get(right)?.role);
-  });
-}
-
-function roleOrder(role: InterpretedObservation['eventVisualSemantics'][number]['role'] | undefined): number {
-  if (role === 'supporting') {
-    return 0;
-  }
-  if (role === 'protagonist') {
-    return 1;
-  }
-  return 2;
 }
 
 function buildObservationAssumptions(uncertainItems: string[]): string[] {
@@ -787,5 +566,38 @@ function buildObservationAssumptions(uncertainItems: string[]): string[] {
 
   return [
     `Os itens ${uncertainItems.map((item) => `'${item}'`).join(', ')} foram tratados como estruturais ou ambíguos e não como eventos.`
+  ];
+}
+
+function buildWorkbookNotes(inputImage: string, assumptions: string[]) {
+  const notes = [
+    {
+      item: 'input_file',
+      detail: path.basename(inputImage)
+    },
+    {
+      item: 'mapping_stage',
+      detail: 'stage = domain + subdomain derivados do touch point principal e consolidados em slug.'
+    },
+    {
+      item: 'mapping_actor',
+      detail: 'actor foi normalizado para system quando a imagem não traz ator operacional confiável.'
+    },
+    {
+      item: 'mapping_service',
+      detail: 'service = domain.subdomain, derivado do touch point e do contexto do evento.'
+    },
+    {
+      item: 'mapping_tags',
+      detail: 'tags incluem touch_point, business_domain, domain, subdomain, metric_type e source_sheet.'
+    }
+  ];
+
+  return [
+    ...notes,
+    ...assumptions.map((assumption, index) => ({
+      item: `note_${index + 1}`,
+      detail: assumption
+    }))
   ];
 }

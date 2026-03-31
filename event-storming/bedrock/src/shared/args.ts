@@ -1,9 +1,8 @@
 export type CliArgs = {
   inputImage: string;
   outputDir: string;
-  provider: 'ollama' | 'openai';
+  provider: 'bedrock';
   startFrom: 'observe' | 'extract' | 'normalize';
-  endAt?: 'observe';
   imageObservation?: string;
   candidateContext?: string;
   defaultModel?: string;
@@ -21,7 +20,6 @@ export function parseCliArgs(argv: string[]): CliArgs {
     outputDir: requireStringArg(rawArgs, 'output-dir'),
     provider: requireProviderArg(rawArgs),
     startFrom: requireStartFromArg(rawArgs),
-    endAt: optionalEndAtArg(rawArgs),
     imageObservation: optionalStringArg(rawArgs, 'image-observation'),
     candidateContext: optionalStringArg(rawArgs, 'candidate-context'),
     defaultModel: optionalStringArg(rawArgs, 'model'),
@@ -70,9 +68,9 @@ function optionalStringArg(args: Record<string, string>, key: string): string | 
   return value.trim();
 }
 
-function requireProviderArg(args: Record<string, string>): 'ollama' | 'openai' {
-  const provider = (args.provider ?? 'ollama').trim();
-  if (provider !== 'ollama' && provider !== 'openai') {
+function requireProviderArg(args: Record<string, string>): 'bedrock' {
+  const provider = (args.provider ?? 'bedrock').trim();
+  if (provider !== 'bedrock') {
     throw new Error(`Provider inválido: ${provider}`);
   }
   return provider;
@@ -84,17 +82,6 @@ function requireStartFromArg(args: Record<string, string>): 'observe' | 'extract
     throw new Error(`start-from inválido: ${startFrom}`);
   }
   return startFrom;
-}
-
-function optionalEndAtArg(args: Record<string, string>): 'observe' | undefined {
-  const endAt = optionalStringArg(args, 'end-at');
-  if (!endAt) {
-    return undefined;
-  }
-  if (endAt !== 'observe') {
-    throw new Error(`end-at inválido: ${endAt}`);
-  }
-  return endAt;
 }
 
 function toPositiveInteger(value: string): number {

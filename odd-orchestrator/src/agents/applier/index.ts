@@ -2,7 +2,7 @@ import path from 'node:path';
 import { parseArgs, requireStringArg } from '../../shared/cli.js';
 import { loadDotEnv } from '../../shared/env.js';
 import { writeJsonFile } from '../../shared/fs.js';
-import { parseProvider } from '../../shared/provider.js';
+import { ObservabilityProvider, parseProvider } from '../../shared/provider.js';
 import { ingestEvents as ingestDatadogEvents } from './datadog.js';
 import { ingestEvents as ingestDynatraceEvents } from './dynatrace.js';
 import { ingestEvents as ingestGrafanaEvents } from './grafana.js';
@@ -26,11 +26,13 @@ async function main(): Promise<void> {
     terraformError = error instanceof Error ? error.message : String(error);
   }
 
-  const ingestedEvents = provider === 'datadog'
-    ? await ingestDatadogEvents(requireStringArg(args, 'events-file'), dryRun)
-    : provider === 'dynatrace'
-    ? await ingestDynatraceEvents(requireStringArg(args, 'events-file'), dryRun)
-    : await ingestGrafanaEvents(requireStringArg(args, 'events-file'), dryRun);
+  const ingestByProvider: Record<ObservabilityProvider, (file: string, dry: boolean) => Promise<{ status: string }[]>> = {
+    datadog: ingestDatadogEvents,
+    dynatrace: ingestDynatraceEvents,
+    grafana: ingestGrafanaEvents
+  };
+
+  const ingestedEvents = await ingestByProvider[provider](requireStringArg(args, 'events-file'), dryRun);
   const failedEventsCount = ingestedEvents.filter((event) => event.status === 'failed').length;
 
   const report = {

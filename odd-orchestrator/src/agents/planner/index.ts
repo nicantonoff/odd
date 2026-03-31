@@ -2,13 +2,15 @@ import path from 'node:path';
 import { parseArgs, requireStringArg } from '../../shared/cli.js';
 import { loadDotEnv } from '../../shared/env.js';
 import { writeJsonFile } from '../../shared/fs.js';
-import { parseProvider } from '../../shared/provider.js';
+import { ObservabilityProvider, parseProvider } from '../../shared/provider.js';
+import { DashboardPlan } from '../../shared/types.js';
 import { readEventStormingFile } from '../../shared/spreadsheet.js';
 import { Ollama, Model } from '../../shared/llm/index.js';
 import { categorizeEvents } from './categorizeEvents.js';
 import { buildDashboardPlan } from './buildPlan.js';
 import { buildDatadogDashboardTerraform } from './datadogTf.js';
 import { buildDynatraceDashboardTerraform } from './dynatraceTf.js';
+import { buildGrafanaDashboardTerraform } from './grafanaTf.js';
 
 function buildRunId(): string {
   const now = new Date();
@@ -33,7 +35,12 @@ async function main(): Promise<void> {
   const baseOutput = typeof args.output === 'string' ? args.output : './generated';
   const provider = parseProvider(args.provider);
 
-  const terraformDir = path.join(provider === 'datadog' ? './terraform' : './terraform-dynatrace');
+  const terraformDirMap: Record<ObservabilityProvider, string> = {
+    datadog: './terraform',
+    dynatrace: './terraform-dynatrace',
+    grafana: './terraform-grafana'
+  };
+  const terraformDir = terraformDirMap[provider];
 
   const inputName = path.basename(input, path.extname(input));
   const runId = buildRunId();
@@ -56,10 +63,14 @@ async function main(): Promise<void> {
   const plan = await buildDashboardPlan(plannerLlm, categorized, dashboardTitle);
   logStep('build-dashboard-plan:done', `bands=${plan.bands.length} customEvents=${plan.customEvents.length}`);
 
+  const terraformBuilder: Record<ObservabilityProvider, (p: DashboardPlan) => Promise<Record<string, unknown>>> = {
+    datadog: buildDatadogDashboardTerraform,
+    dynatrace: buildDynatraceDashboardTerraform,
+    grafana: buildGrafanaDashboardTerraform
+  };
+
   logStep('build-terraform', `provider=${provider}`);
-  const terraformJson = provider === 'datadog'
-    ? await buildDatadogDashboardTerraform(plan)
-    : await buildDynatraceDashboardTerraform(plan);
+  const terraformJson = await terraformBuilder[provider](plan);
   logStep('build-terraform:done');
 
   logStep('write-artifacts');

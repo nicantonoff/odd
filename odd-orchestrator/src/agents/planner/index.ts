@@ -2,7 +2,8 @@ import path from 'node:path';
 import { parseArgs, requireStringArg } from '../../shared/cli.js';
 import { loadDotEnv } from '../../shared/env.js';
 import { writeJsonFile } from '../../shared/fs.js';
-import { parseProvider } from '../../shared/provider.js';
+import { ObservabilityProvider, parseProvider } from '../../shared/provider.js';
+import { DashboardPlan } from '../../shared/types.js';
 import { readEventStormingFile } from '../../shared/spreadsheet.js';
 import { Ollama, Model } from '../../shared/llm/index.js';
 import { categorizeEvents } from './categorizeEvents.js';
@@ -34,12 +35,12 @@ async function main(): Promise<void> {
   const baseOutput = typeof args.output === 'string' ? args.output : './generated';
   const provider = parseProvider(args.provider);
 
-  const terraformDirMap: Record<string, string> = {
+  const terraformDirMap: Record<ObservabilityProvider, string> = {
     datadog: './terraform',
     dynatrace: './terraform-dynatrace',
     grafana: './terraform-grafana'
   };
-  const terraformDir = path.join(terraformDirMap[provider]);
+  const terraformDir = terraformDirMap[provider];
 
   const inputName = path.basename(input, path.extname(input));
   const runId = buildRunId();
@@ -62,12 +63,14 @@ async function main(): Promise<void> {
   const plan = await buildDashboardPlan(plannerLlm, categorized, dashboardTitle);
   logStep('build-dashboard-plan:done', `bands=${plan.bands.length} customEvents=${plan.customEvents.length}`);
 
+  const terraformBuilder: Record<ObservabilityProvider, (p: DashboardPlan) => Promise<Record<string, unknown>>> = {
+    datadog: buildDatadogDashboardTerraform,
+    dynatrace: buildDynatraceDashboardTerraform,
+    grafana: buildGrafanaDashboardTerraform
+  };
+
   logStep('build-terraform', `provider=${provider}`);
-  const terraformJson = provider === 'datadog'
-    ? await buildDatadogDashboardTerraform(plan)
-    : provider === 'dynatrace'
-    ? await buildDynatraceDashboardTerraform(plan)
-    : await buildGrafanaDashboardTerraform(plan);
+  const terraformJson = await terraformBuilder[provider](plan);
   logStep('build-terraform:done');
 
   logStep('write-artifacts');
